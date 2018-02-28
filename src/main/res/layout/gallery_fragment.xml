@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.march.uikit.widget.SlidingSelectLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sliding"
+    android:animateLayoutChanges="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_select_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingBottom="50dp"
+        app:layoutManager="android.support.v7.widget.GridLayoutManager"
+        app:spanCount="3"
+        tools:listitem="@layout/gallery_item"/>
+
+    <RelativeLayout
+        android:id="@+id/bot_rl"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom"
+        android:background="#fff">
+
+        <View style="@style/common_line"/>
+
+        <TextView
+            android:id="@+id/tv_select_image_dir"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="start|center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="全部图片"
+            android:textColor="@color/black"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:minWidth="95dp"
+            android:id="@+id/tv_ensure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/gallery_shape_ensure_btn"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            tools:text="完成"
+            android:textColor="@color/white"
+            android:textSize="14sp"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_time_image"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:background="#99000000"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:textColor="@color/white"/>
+
+</com.march.uikit.widget.SlidingSelectLayout>
