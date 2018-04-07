@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="150dp"
     android:layout_height="150dp"
     android:layout_gravity="center"
-             android:background="@color/white"
+    android:background="@color/white"
     android:padding="1dp">
 
     <ImageView
-        android:background="#efefef"
         android:id="@+id/iv_select_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:scaleType="centerCrop" />
-
+        android:background="#efefef"
+        android:scaleType="centerCrop"/>
 
     <View
         android:id="@+id/view_click_cover"
         android:layout_width="55dp"
         android:layout_height="55dp"
-        android:layout_gravity="right" />
+        android:layout_gravity="right"/>
 
     <View
         android:id="@+id/cover_select_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#55000000"
-        android:visibility="gone" />
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/tv_select_image"
@@ -36,7 +37,7 @@
         android:layout_margin="7dp"
         android:background="@drawable/gallery_selector_number"
         android:gravity="center"
-        android:text="12"
         android:textColor="@color/white"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:text="12"/>
 </FrameLayout>

@@ -36,20 +36,13 @@ public class ImageDirDialog extends BaseDialog {
     private LightAdapter<ImageDirInfo> mDirAdapter;
     private SelectManager<ImageDirInfo> mSelectManager;
 
-    ImageDirDialog(Context context, Map<String, List<ImageInfo>> mImageMap) {
+    public ImageDirDialog(Context context, List<ImageDirInfo> imageDirs) {
         super(context);
-        mImageDirs = new ArrayList<>();
-        ImageDirInfo dir;
-        for (String dirName : mImageMap.keySet()) {
-            List<ImageInfo> imageInfos = mImageMap.get(dirName);
-            dir = new ImageDirInfo(imageInfos.size(), dirName, imageInfos.get(0));
-            mImageDirs.add(dir);
-        }
-        Collections.sort(mImageDirs);
+        mImageDirs = imageDirs;
     }
 
 
-    interface OnImageDirClickListener {
+    public interface OnImageDirClickListener {
         void onClickDir(int pos, ImageDirInfo dir);
     }
 

@@ -1,7 +1,6 @@
 package com.march.gallery.model;
 
 
-import android.support.annotation.NonNull;
 
 import com.march.common.model.ImageInfo;
 
@@ -40,7 +39,7 @@ public class ImageDirInfo implements Comparable<ImageDirInfo> {
     }
 
     @Override
-    public int compareTo(@NonNull ImageDirInfo another) {
+    public int compareTo( ImageDirInfo another) {
         return another.picNum - picNum;
     }
 }
