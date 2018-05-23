@@ -10,22 +10,24 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.march.common.model.ImageInfo;
 import com.march.common.utils.CheckUtils;
+import com.march.common.utils.DimensUtils;
+import com.march.common.utils.ToastUtils;
 import com.march.gallery.Gallery;
 import com.march.gallery.ImageDirDialog;
 import com.march.gallery.R;
 import com.march.gallery.common.ScanImageTask;
-import com.march.gallery.preview.GalleryPreviewFragment;
-import com.march.common.model.ImageInfo;
-import com.march.common.utils.DimensUtils;
-import com.march.common.utils.ToastUtils;
 import com.march.gallery.model.ImageDirInfo;
+import com.march.gallery.preview.GalleryPreviewFragment;
 import com.march.lightadapter.LightAdapter;
 import com.march.lightadapter.LightHolder;
-import com.march.lightadapter.event.SimpleItemListener;
+import com.march.lightadapter.LightInjector;
 import com.march.lightadapter.extend.SelectManager;
+import com.march.lightadapter.inject.AdapterConfig;
 import com.march.lightadapter.listener.AdapterViewBinder;
-import com.march.uikit.annotation.Title;
+import com.march.lightadapter.listener.SimpleItemListener;
+import com.march.uikit.annotation.UITitle;
 import com.march.uikit.app.BaseActivity;
 import com.march.uikit.app.BaseFragment;
 import com.march.uikit.widget.SlidingSelectLayout;
@@ -44,7 +46,7 @@ import java.util.Map;
  *
  * @author chendong
  */
-@Title(hasTitle = true)
+@UITitle(hasTitle = true)
 public class GalleryListFragment extends BaseFragment implements GalleryPreviewFragment.PreviewService {
 
     private static final String PIC_DATE_PATTERN = "yyyy年M月d日 HH:mm:ss";
@@ -269,7 +271,7 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
             return;
         }
         // 创建adapter
-        mImageAdapter = new LightAdapter<ImageInfo>(getContext(), imageInfos, R.layout.gallery_list_item) {
+        mImageAdapter = new LightAdapter<ImageInfo>(getContext(), imageInfos) {
             @Override
             public void onBindView(LightHolder holder, ImageInfo data, final int pos, int type) {
                 mSlidingSelectLy.markView(holder.getItemView(), pos, data);
@@ -324,7 +326,8 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
             }
         });
         mLayoutManager = new GridLayoutManager(getContext(), mSpanCount);
-        mImageAdapter.bind(this, mImageRv, mLayoutManager);
+
+        LightInjector.initAdapter(mImageAdapter, new AdapterConfig().itemLayoutId(R.layout.gallery_list_item), mImageRv, mLayoutManager);
     }
 
     private void updateOtherHolder() {

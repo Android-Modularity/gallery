@@ -1,13 +1,19 @@
 apply plugin: 'com.android.library'
+
+// project/build.gradle
+// apply from: 'https://coding.net/u/devlab/p/Resource/git/raw/master/android/project.gradle'
+def libs = rootProject.ext.libs
+def version = rootProject.ext.version
+
 android {
-    compileSdkVersion 26
+    compileSdkVersion version.compileSdkVersion
 }
 
 dependencies {
     implementation project(':uikit')
     implementation project(':common')
     implementation project(':lightadapter')
-    implementation rootProject.ext.google.appcompat_v7
-    implementation rootProject.ext.google.design
-    implementation rootProject.ext.google.recyclerView_v7
+    implementation libs.appcompat_v7
+    implementation libs.design
+    implementation libs.recyclerView_v7
 }

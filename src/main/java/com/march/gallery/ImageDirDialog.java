@@ -1,26 +1,23 @@
 package com.march.gallery;
 
 import android.content.Context;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.widget.ImageView;
 
 
-import com.march.common.model.ImageInfo;
 import com.march.common.utils.DimensUtils;
+import com.march.lightadapter.LightInjector;
+import com.march.lightadapter.helper.LightManager;
 import com.march.uikit.dialog.BaseDialog;
 import com.march.gallery.model.ImageDirInfo;
 import com.march.lightadapter.LightAdapter;
 import com.march.lightadapter.LightHolder;
-import com.march.lightadapter.event.SimpleItemListener;
+import com.march.lightadapter.listener.SimpleItemListener;
 import com.march.lightadapter.extend.SelectManager;
 import com.march.lightadapter.listener.AdapterViewBinder;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * CreateAt : 2017/11/9
@@ -85,7 +82,7 @@ public class ImageDirDialog extends BaseDialog {
                 holder.setVisibleInVisible(R.id.iv_dir_sign, mSelectManager.isSelect(data));
             }
         });
-        mDirAdapter.bind(this, mDirRv, new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        LightInjector.initAdapter(mDirAdapter, this, mDirRv, LightManager.vLinear(getContext()));
     }
 
     @Override
