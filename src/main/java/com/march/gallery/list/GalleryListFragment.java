@@ -236,7 +236,6 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
                     List<ImageInfo> selectDatas = mSelectManager.getResults();
                     if (selectDatas.size() > 0) {
                         Gallery.getGalleryService().onSuccess(selectDatas);
-                         mViewDelegate.finish();
                     } else {
                         ToastUtils.show("请至少选择一张照片");
                     }
@@ -327,7 +326,7 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
         });
         mLayoutManager = new GridLayoutManager(getContext(), mSpanCount);
 
-        LightInjector.initAdapter(mImageAdapter, new AdapterConfig().itemLayoutId(R.layout.gallery_list_item), mImageRv, mLayoutManager);
+        LightInjector.initAdapter(mImageAdapter,AdapterConfig.newConfig().itemLayoutId(R.layout.gallery_list_item), mImageRv, mLayoutManager);
     }
 
     private void updateOtherHolder() {
