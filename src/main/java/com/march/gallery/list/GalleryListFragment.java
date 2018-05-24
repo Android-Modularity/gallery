@@ -351,10 +351,10 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
         boolean isSelect = mSelectManager.isSelect(data);
         holder.setVisibleGone(R.id.cover_select_image, isSelect)
                 .setSelect(R.id.tv_select_image, isSelect);
-        if (mMaxNum > 1) {
+       // if (mMaxNum > 1) {
             String selectNum = isSelect ? String.valueOf(mSelectManager.indexOf(data) + 1) : "";
             holder.setText(R.id.tv_select_image, selectNum);
-        }
+       // }
     }
 
     private List<ImageInfo> mCurrentImages;
