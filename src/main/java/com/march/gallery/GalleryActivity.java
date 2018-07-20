@@ -4,7 +4,7 @@ import android.content.Context;
 import android.widget.ImageView;
 
 import com.march.common.model.ImageInfo;
-import com.march.common.utils.LogUtils;
+import com.march.common.utils.LgUtils;
 import com.march.gallery.list.GalleryListFragment;
 import com.march.uikit.app.BaseActivity;
 
@@ -42,7 +42,7 @@ public abstract class GalleryActivity extends BaseActivity {
 
             @Override
             public void onSuccess(List<ImageInfo> list) {
-                LogUtils.object(list);
+                LgUtils.object(list);
                 GalleryActivity.this.onResult(list);
             }
 
