@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="150dp"
     android:layout_height="150dp"
     android:layout_gravity="center"
-    android:background="@color/white"
+    android:background="@android:color/white"
     android:padding="1dp">
 
     <ImageView
@@ -29,15 +30,37 @@
         android:background="#55000000"
         android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/tv_select_image"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:layout_gravity="end"
-        android:layout_margin="7dp"
-        android:background="@drawable/gallery_selector_number"
-        android:gravity="center"
-        android:textColor="@color/white"
-        android:textSize="12sp"
-        tools:text="12"/>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end">
+
+        <com.march.gallery.ShopIconView
+            android:id="@+id/siv_select_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginRight="2dp"
+            android:gravity="center"
+            android:textColor="@color/white"
+            />
+
+        <TextView
+            android:id="@+id/tv_select_image"
+            android:layout_width="23dp"
+            android:layout_height="23dp"
+            android:layout_gravity="center"
+            android:layout_margin="4dp"
+            android:background="@drawable/gallery_selector_number"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:visibility="gone"
+            tools:text="12"/>
+    </FrameLayout>
+
+    <View
+        android:id="@+id/view_single_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </FrameLayout>

@@ -1,12 +1,14 @@
 package com.march.gallery;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 
 import com.march.common.model.ImageInfo;
 import com.march.common.utils.LgUtils;
 import com.march.gallery.list.GalleryListFragment;
-import com.march.uikit.app.BaseActivity;
 
 import java.util.List;
 
@@ -16,24 +18,18 @@ import java.util.List;
  *
  * @author chendong
  */
-public abstract class GalleryActivity extends BaseActivity {
+public abstract class GalleryActivity extends AppCompatActivity {
 
     private GalleryListFragment mGalleryListFragment;
 
     @Override
-    public int getLayoutId() {
-        return R.layout.gallery_activity;
-    }
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.gallery_activity);
 
-    @Override
-    public void initAfterViewCreated() {
-        super.initAfterViewCreated();
         mGalleryListFragment = GalleryListFragment.newInst(1);
         mGalleryListFragment.addToContainer(this, R.id.fragment_container_list);
-    }
 
-    @Override
-    public void initBeforeViewCreated() {
         Gallery.setGalleryService(new Gallery.GalleryService() {
             @Override
             public void loadImg(Context context, String path, int width, int height, ImageView imageView) {

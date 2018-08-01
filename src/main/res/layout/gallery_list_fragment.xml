@@ -1,19 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.march.uikit.widget.SlidingSelectLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/sliding"
-    android:animateLayoutChanges="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:animateLayoutChanges="true"
+    android:background="@android:color/white">
+
+    <RelativeLayout
+        android:id="@+id/rl_top"
+        android:layout_width="match_parent"
+        android:layout_height="45dp">
+
+        <TextView
+            android:id="@+id/tv_title_left"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="取消"
+            android:textColor="@color/blackTwo"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/tv_title_center"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_centerInParent="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:text="全部照片"
+            android:textColor="@color/blackTwo"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/tv_title_right"
+            android:layout_width="wrap_content"
+            android:layout_height="45dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textColor="@color/blackTwo"
+            android:textSize="14sp"
+            tools:text="完成(2)"/>
+
+    </RelativeLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_select_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:layout_below="@id/rl_top"
+        android:background="@android:color/white"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:overScrollMode="never"
@@ -22,42 +67,59 @@
         app:spanCount="3"
         tools:listitem="@layout/gallery_list_item"/>
 
+    <View
+        android:id="@+id/view_pop_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="#6000"
+        android:visibility="visible"/>
+
     <RelativeLayout
         android:id="@+id/bot_rl"
         android:layout_width="match_parent"
         android:layout_height="45dp"
+        android:layout_alignParentBottom="true"
         android:layout_gravity="bottom"
         android:background="#fff">
 
-        <View style="@style/common_line"/>
-
-        <TextView
-            android:id="@+id/tv_select_image_dir"
+        <RelativeLayout
+            android:id="@+id/rl_select_image_dir"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp">
+
+            <TextView
+                android:id="@+id/tv_select_image_dir"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:gravity="start|center_vertical"
+                android:text="全部图片"
+                android:textColor="#4c4c4c"
+                android:textSize="14sp"/>
+
+            <ImageView
+                android:layout_width="7dp"
+                android:layout_marginBottom="2dp"
+                android:layout_height="7dp"
+                android:layout_alignBottom="@id/tv_select_image_dir"
+                android:layout_toRightOf="@id/tv_select_image_dir"
+                android:src="@drawable/arrow"/>
+        </RelativeLayout>
+
+
+        <TextView
+            android:id="@+id/tv_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
             android:gravity="start|center_vertical"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:text="全部图片"
-            android:textColor="@color/black"
-            android:textSize="16sp"/>
-
-        <TextView
-            android:minWidth="95dp"
-            android:id="@+id/tv_ensure"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/gallery_selector_ensure_btn"
-            android:gravity="center"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"
-            tools:text="完成"
-            android:textColor="@color/white"
+            android:text="预览"
+            android:textColor="#4c4c4c"
             android:textSize="14sp"/>
 
     </RelativeLayout>
@@ -66,11 +128,17 @@
         android:id="@+id/tv_time_image"
         android:layout_width="match_parent"
         android:layout_height="35dp"
+        android:layout_below="@id/rl_top"
+        android:alpha="0"
         android:background="#99000000"
         android:gravity="center_vertical"
         android:paddingLeft="10dp"
-        android:alpha="0"
-        android:visibility="visible"
-        android:textColor="@color/white"/>
+        android:textColor="@android:color/white"
+        android:visibility="visible"/>
 
-</com.march.uikit.widget.SlidingSelectLayout>
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+</RelativeLayout>
