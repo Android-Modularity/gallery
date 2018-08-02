@@ -31,7 +31,6 @@ public class EntryDialogFragment extends DialogFragment {
     }
 
     private void executeOnPermissionGranted(String permission, Runnable runnable) {
-        if(getActivity().checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
     }
 
     @Nullable
