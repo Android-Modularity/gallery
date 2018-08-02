@@ -77,6 +77,7 @@ public class ImageDirDialog extends Dialog {
             @Override
             public void onBindView(LightHolder holder, final ImageDirInfo data, int pos, int type) {
                 holder.setText(R.id.tv_dir_name, data.getDirName())
+                        .setImage(R.id.iv_dir_sign, Gallery.getGalleryService().getConfig().dirSignIcon)
                         .setText(R.id.tv_dir_img_num, String.valueOf(data.getPicNum()))
                         .setCallback(R.id.iv_dir_cover, new LightHolder.Callback<ImageView>() {
                             @Override
@@ -100,9 +101,10 @@ public class ImageDirDialog extends Dialog {
         mSelectManager = new SelectManager<>(mDirAdapter, SelectManager.TYPE_SINGLE, new AdapterViewBinder<ImageDirInfo>() {
             @Override
             public void onBindViewHolder(LightHolder holder, ImageDirInfo data, int pos, int type) {
-                holder.setVisibleInVisible(R.id.siv_dir_sign, mSelectManager.isSelect(data));
+                holder.setVisibleInVisible(R.id.iv_dir_sign, mSelectManager.isSelect(data));
             }
         });
+        mSelectManager.initSelect(0);
         AdapterConfig config = AdapterConfig.newConfig().itemLayoutId(R.layout.gallery_dir_item);
         LightInjector.initAdapter(mDirAdapter, config, mDirRv, LightManager.vLinear(getContext()));
     }

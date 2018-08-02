@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="150dp"
     android:layout_height="150dp"
@@ -9,8 +8,9 @@
     android:background="@android:color/white"
     android:padding="1dp">
 
+
     <ImageView
-        android:id="@+id/iv_select_image"
+        android:id="@+id/image_item_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
@@ -35,26 +35,29 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end">
 
-        <com.march.gallery.ShopIconView
-            android:id="@+id/siv_select_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
+            android:id="@+id/select_no_sign_iv"
+            android:layout_width="23dp"
+            android:layout_height="23dp"
+            android:scaleType="centerInside"
             android:layout_gravity="center"
             android:layout_marginRight="2dp"
+            android:layout_marginTop="2dp"
             android:gravity="center"
-            android:textColor="@color/white"
+            android:textColor="@android:color/white"
             />
 
         <TextView
-            android:id="@+id/tv_select_image"
-            android:layout_width="23dp"
-            android:layout_height="23dp"
+            android:id="@+id/select_yes_sign_tv"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:layout_gravity="center"
             android:layout_margin="4dp"
+            android:paddingBottom="1dp"
             android:background="@drawable/gallery_selector_number"
             android:gravity="center"
             android:textColor="@android:color/white"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:visibility="gone"
             tools:text="12"/>
     </FrameLayout>

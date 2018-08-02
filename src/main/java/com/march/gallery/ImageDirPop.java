@@ -112,7 +112,7 @@ public class ImageDirPop extends PopupWindow {
         mSelectManager = new SelectManager<>(mDirAdapter, SelectManager.TYPE_SINGLE, new AdapterViewBinder<ImageDirInfo>() {
             @Override
             public void onBindViewHolder(LightHolder holder, ImageDirInfo data, int pos, int type) {
-                holder.setVisibleInVisible(R.id.siv_dir_sign, mSelectManager.isSelect(data));
+                holder.setVisibleInVisible(R.id.iv_dir_sign, mSelectManager.isSelect(data));
             }
         });
         mSelectManager.initSelect(0);

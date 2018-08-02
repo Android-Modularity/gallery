@@ -27,7 +27,7 @@ public abstract class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gallery_activity);
 
-        mGalleryListFragment = GalleryListFragment.newInst(1);
+        mGalleryListFragment = GalleryListFragment.newInst(10);
         mGalleryListFragment.addToContainer(this, R.id.fragment_container_list);
 
         Gallery.setGalleryService(new Gallery.GalleryService() {
@@ -42,9 +42,10 @@ public abstract class GalleryActivity extends AppCompatActivity {
                 GalleryActivity.this.onResult(list);
             }
 
+
             @Override
-            public int getPreviewContainerId() {
-                return R.id.fragment_container_preview;
+            public Gallery.Config getConfig() {
+                return null;
             }
         });
     }
@@ -53,10 +54,10 @@ public abstract class GalleryActivity extends AppCompatActivity {
 
     protected abstract void onResult(List<ImageInfo> list);
 
-    @Override
-    public void onBackPressed() {
-        if (!mGalleryListFragment.onBackPressed()) {
-            super.onBackPressed();
-        }
-    }
+//    @Override
+//    public void onBackPressed() {
+//        if (!mGalleryListFragment.onBackPressed()) {
+//            super.onBackPressed();
+//        }
+//    }
 }

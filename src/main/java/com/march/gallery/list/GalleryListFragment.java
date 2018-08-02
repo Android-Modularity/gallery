@@ -1,12 +1,12 @@
 package com.march.gallery.list;
 
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -23,10 +23,9 @@ import com.march.gallery.Gallery;
 import com.march.gallery.ImageDirDialog;
 import com.march.gallery.ImageDirPop;
 import com.march.gallery.R;
-import com.march.gallery.common.CommonUtils;
 import com.march.gallery.common.ScanImageTask;
 import com.march.gallery.model.ImageDirInfo;
-import com.march.gallery.preview.GalleryPreviewFragment;
+import com.march.gallery.ui.GalleryPreviewActivity;
 import com.march.lightadapter.LightAdapter;
 import com.march.lightadapter.LightHolder;
 import com.march.lightadapter.LightInjector;
@@ -51,7 +50,10 @@ import java.util.concurrent.Executors;
  *
  * @author chendong
  */
-public class GalleryListFragment extends Fragment implements GalleryPreviewFragment.PreviewService {
+public class GalleryListFragment extends Fragment {
+
+
+    public static final int PREVIEW_REQ_CODE = 100;
 
     private static final String PIC_DATE_PATTERN = "yyyy年M月d日 HH:mm:ss";
 
@@ -81,6 +83,11 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
     private View                         mPopCoverView;
     private View                         mPreviewTv;
 
+    public static GalleryListFragment newInst(Bundle bundle) {
+        GalleryListFragment fragment = new GalleryListFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
 
     public static GalleryListFragment newInst(int limit) {
         GalleryListFragment fragment = new GalleryListFragment();
@@ -100,16 +107,16 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
     }
 
     @Override
-    public void onPreviewFinish(List<ImageInfo> selectImages) {
-        mSelectManager.setSelectDatas(selectImages);
-        updateOnResume();
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PREVIEW_REQ_CODE) {
+            ArrayList<ImageInfo> imgs = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
+            if (imgs != null && !imgs.isEmpty()) {
+                mSelectManager.setSelectDatas(imgs);
+                updateOnResume();
+            }
+        }
     }
-
-    @Override
-    public int getMaxNum() {
-        return mMaxNum;
-    }
-
 
     static class MyScanImageTask extends ScanImageTask {
 
@@ -159,11 +166,10 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
             mTitleRightTv.setText("未选择");
             mTitleRightTv.setTextColor(Color.rgb(76, 76, 76));
         } else {
-            mTitleRightTv.setText("完成(" + mSelectManager.size() + ")");
+            mTitleRightTv.setText(String.format(Locale.getDefault(), "完成(%d)", mSelectManager.size()));
             mTitleRightTv.setSelected(true);
             mTitleRightTv.setClickable(true);
-
-            mTitleRightTv.setTextColor(Color.rgb(249, 52, 80));
+            mTitleRightTv.setTextColor(getResources().getColor(R.color.colorPrimary));
         }
     }
 
@@ -184,14 +190,12 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
         return view;
     }
 
-
     private boolean isSingleMode() {
         return mMaxNum == 1;
     }
 
     public void initCreateView(View view) {
         mMaxNum = getArguments().getInt(Gallery.KEY_LIMIT, 1);
-
         mPopCoverView = view.findViewById(R.id.view_pop_cover);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
         mTitleLeftTv = (TextView) view.findViewById(R.id.tv_title_left);
@@ -208,41 +212,41 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
 
         changeDisplayOnSingleMode();
 
-//        mImageRv.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
-//            @Override
-//            public void onChildViewAttachedToWindow(View view) {
-//                // 获取第一个位置
-//                int firstVisibleItemPosition = mLayoutManager.findFirstVisibleItemPosition();
-//                if (firstVisibleItemPosition < 0) {
-//                    return;
-//                }
-//                String date = mCurrentImages.get(firstVisibleItemPosition).getDate();
-//                mDateTv.setText(mDateFormat.format(Long.parseLong(date) * 1000));
-//            }
-//
-//            @Override
-//            public void onChildViewDetachedFromWindow(View view) {
-//
-//            }
-//        });
+        mImageRv.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(View view) {
+                // 获取第一个位置
+                int firstVisibleItemPosition = mLayoutManager.findFirstVisibleItemPosition();
+                if (firstVisibleItemPosition < 0) {
+                    return;
+                }
+                String date = mCurrentImages.get(firstVisibleItemPosition).getDate();
+                mDateTv.setText(mDateFormat.format(Long.parseLong(date) * 1000));
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(View view) {
+
+            }
+        });
 
         // 滑动时显示时间条
-//        mImageRv.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//                if (RecyclerView.SCROLL_STATE_IDLE == newState) {
-//                    mDateTv.setAlpha(1f);
-//                    stopFadeOutAnim();
-//                    mFadeOutAnim = ObjectAnimator.ofFloat(mDateTv, "alpha", 1f, 0f).setDuration(1500);
-//                    mFadeOutAnim.start();
-//                } else {
-//                    stopFadeOutAnim();
-//                    mDateTv.clearAnimation();
-//                    mDateTv.setAlpha(1f);
-//                }
-//            }
-//        });
+        mImageRv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (RecyclerView.SCROLL_STATE_IDLE == newState) {
+                    mDateTv.setAlpha(1f);
+                    stopFadeOutAnim();
+                    mFadeOutAnim = ObjectAnimator.ofFloat(mDateTv, "alpha", 1f, 0f).setDuration(1500);
+                    mFadeOutAnim.start();
+                } else {
+                    stopFadeOutAnim();
+                    mDateTv.clearAnimation();
+                    mDateTv.setAlpha(1f);
+                }
+            }
+        });
 
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
@@ -330,7 +334,7 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
                                 Gallery.getGalleryService().onSuccess(list);
                             }
                         })
-                        .setClick(Ids.all(R.id.view_click_cover, R.id.tv_select_image, R.id.siv_select_image),
+                        .setClick(Ids.all(R.id.view_click_cover, R.id.select_yes_sign_tv, R.id.select_no_sign_iv),
                                 new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -338,7 +342,7 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
                                         updateOtherHolder();
                                     }
                                 });
-                ImageView iv = holder.getView(R.id.iv_select_image);
+                ImageView iv = holder.getView(R.id.image_item_iv);
                 Gallery.getGalleryService().loadImg(getContext(), data.getPath(), mItemSize, mItemSize, iv);
             }
         };
@@ -390,7 +394,7 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
         TextView tv;
         for (LightHolder holder : mImageAdapter.getHolderSet()) {
             if (holder != null
-                    && (tv = holder.getView(R.id.tv_select_image)) != null
+                    && (tv = holder.getView(R.id.select_yes_sign_tv)) != null
                     && tv.isSelected()) {
                 data = mImageAdapter.getRealItem(holder.getLayoutPosition());
                 bindItemView(holder, data);
@@ -404,18 +408,19 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
         }
         if (isSingleMode()) {
             holder.setVisibleGone(R.id.cover_select_image, false)
-                    .setVisibleGone(R.id.tv_select_image, false);
+                    .setVisibleGone(R.id.select_yes_sign_tv, false);
 //                    .setVisibleGone(R.id.siv_select_image, false);
             return;
         }
         boolean isSelect = mSelectManager.isSelect(data);
         holder.setVisibleGone(R.id.cover_select_image, isSelect)
-                .setSelect(R.id.tv_select_image, true)
-                .setVisibleGone(R.id.tv_select_image, isSelect)
-                .setVisibleGone(R.id.siv_select_image, !isSelect);
+                .setSelect(R.id.select_yes_sign_tv, true)
+                .setVisibleGone(R.id.select_yes_sign_tv, isSelect)
+                .setImage(R.id.select_no_sign_iv, Gallery.getGalleryService().getConfig().itemNoSelectIcon)
+                .setVisibleGone(R.id.select_no_sign_iv, !isSelect);
         if (mMaxNum > 1) {
             String selectNum = isSelect ? String.valueOf(mSelectManager.indexOf(data) + 1) : "";
-            holder.setText(R.id.tv_select_image, selectNum);
+            holder.setText(R.id.select_yes_sign_tv, selectNum);
         }
     }
 
@@ -483,33 +488,34 @@ public class GalleryListFragment extends Fragment implements GalleryPreviewFragm
         }
     }
 
-    private GalleryPreviewFragment mGalleryPreviewFragment;
 
     private void previewImages(List<ImageInfo> allImages, List<ImageInfo> selectImages, int index) {
-        FragmentTransaction transaction = getActivity()
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out);
-        mGalleryPreviewFragment = new GalleryPreviewFragment();
-        mGalleryPreviewFragment.setPreviewService(this);
-        transaction.add(Gallery.getGalleryService().getPreviewContainerId(), mGalleryPreviewFragment, "preview");
-        transaction.show(mGalleryPreviewFragment).commit();
-        mGalleryPreviewFragment.update(allImages, selectImages, index);
+        GalleryPreviewActivity.startActivityForResult(getActivity(), allImages, selectImages, index);
+//
+//        FragmentTransaction transaction = getActivity()
+//                .getSupportFragmentManager()
+//                .beginTransaction()
+//                .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out);
+//        mGalleryPreviewFragment = new GalleryPreviewFragment();
+//        mGalleryPreviewFragment.setPreviewService(this);
+//        transaction.add(Gallery.getGalleryService().getPreviewContainerId(), mGalleryPreviewFragment, "preview");
+//        transaction.show(mGalleryPreviewFragment).commit();
+//        mGalleryPreviewFragment.update(allImages, selectImages, index);
     }
 
 
-    public boolean onBackPressed() {
-        if (mGalleryPreviewFragment != null && !mGalleryPreviewFragment.isHidden()) {
-            getActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out)
-                    .hide(mGalleryPreviewFragment)
-                    .remove(mGalleryPreviewFragment)
-                    .commit();
-            return true;
-        }
-        return false;
-    }
+//    public boolean onBackPressed() {
+//        if (mGalleryPreviewFragment != null && !mGalleryPreviewFragment.isHidden()) {
+//            getActivity()
+//                    .getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out)
+//                    .hide(mGalleryPreviewFragment)
+//                    .remove(mGalleryPreviewFragment)
+//                    .commit();
+//            return true;
+//        }
+//        return false;
+//    }
 
 }

@@ -28,7 +28,7 @@
                 android:width="20dp"
                 android:height="20dp"/>
 
-            <solid android:color="@color/gallery_main_color"/>
+            <solid android:color="@color/colorPrimary"/>
 
             <corners android:radius="20dp"/>
 

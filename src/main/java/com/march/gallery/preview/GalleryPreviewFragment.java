@@ -1,6 +1,5 @@
 package com.march.gallery.preview;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,18 +12,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.march.common.model.ImageInfo;
+import com.march.common.utils.CheckUtils;
 import com.march.common.utils.DimensUtils;
 import com.march.gallery.Gallery;
 import com.march.gallery.R;
-import com.march.gallery.ShopIconView;
 import com.march.gallery.common.CommonUtils;
 import com.march.lightadapter.LightHolder;
 import com.march.lightadapter.pager.LightPagerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-
-//import com.showjoy.shop.common.view.ShopIconView;
+import java.util.Locale;
 
 /**
  * CreateAt : 2018/3/2
@@ -37,38 +35,23 @@ public class GalleryPreviewFragment extends Fragment {
     private LightPagerAdapter<ImageInfo> mImagePagerAdapter;
     private ViewPager                    mImageVp;
     private TextView                     mEnsureTv;
-    private ShopIconView                 mSelectSiv;
+    private ImageView                    mSelectSiv;
 
-    private List<ImageInfo> mAllImages = new ArrayList<>();
-    private List<ImageInfo> mSelectImages = new ArrayList<>();
-    private int mInitIndex;
-    private PreviewService mPreviewService;
+    private List<ImageInfo> mAllImages;
+    private List<ImageInfo> mSelectImages;
+    private int             mInitIndex;
+    private int             mMaxNum;
 
     private int width, height;
 
 
-    public interface PreviewService {
-
-        void onPreviewFinish(List<ImageInfo> selectImages);
-
-        int getMaxNum();
+    public static GalleryPreviewFragment newInst(Bundle bundle) {
+        GalleryPreviewFragment fragment = new GalleryPreviewFragment();
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (mPreviewService != null && hidden) {
-            mPreviewService.onPreviewFinish(mSelectImages);
-        }
-    }
 
-    public List<ImageInfo> getSelectImages() {
-        return mSelectImages;
-    }
-
-    public void setPreviewService(PreviewService previewService) {
-        mPreviewService = previewService;
-    }
 
     public void update(List<ImageInfo> allImages, List<ImageInfo> selectImages, int index) {
         mAllImages = new ArrayList<>(allImages);
@@ -103,32 +86,45 @@ public class GalleryPreviewFragment extends Fragment {
         width = getContext().getResources().getDisplayMetrics().widthPixels;
         height = getContext().getResources().getDisplayMetrics().heightPixels - DimensUtils.dp2px(90);
         View view = inflater.inflate(R.layout.gallery_preview_fragment, container, false);
-        initCreateView(view);
+        Bundle arguments = getArguments();
+        mAllImages = new ArrayList<>();
+        mSelectImages = new ArrayList<>();
+        if (arguments != null) {
+            ArrayList<ImageInfo> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMGS);
+            if (!CheckUtils.isEmpty(allImgs)) {
+                mAllImages.addAll(allImgs);
+            }
+            ArrayList<ImageInfo> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMGS);
+            if (!CheckUtils.isEmpty(selectImgs)) {
+                mSelectImages.addAll(selectImgs);
+            }
+            mInitIndex = arguments.getInt(Gallery.KEY_INDEX, 0);
+            mMaxNum = arguments.getInt(Gallery.KEY_LIMIT, 0);
+        }
+        initView(view);
         return view;
     }
 
     private void updateSelectSiv(ImageInfo imageInfo) {
         if (!mSelectImages.contains(imageInfo)) {
-            mSelectSiv.setNormalIconColor(Color.rgb(26, 18, 16));
-            mSelectSiv.setNormalIconText("&#xe700;");
+            mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewUnSelectIcon);
             mSelectSiv.setClickable(false);
         } else {
-            mSelectSiv.setNormalIconColor(Color.rgb(249, 52, 80));
-            mSelectSiv.setNormalIconText("&#xe6d2;");
+            mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewSelectIcon);
             mSelectSiv.setClickable(true);
         }
     }
 
-    public void initCreateView(View view) {
+    public void initView(View view) {
         mImageVp = (ViewPager) view.findViewById(R.id.vp_image);
         mEnsureTv = (TextView) view.findViewById(R.id.tv_ensure);
-        mSelectSiv = (ShopIconView) view.findViewById(R.id.siv_select);
+        mSelectSiv = (ImageView) view.findViewById(R.id.detail_select_iv);
         mSelectSiv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateEnsureText();
                 ImageInfo imageInfo = mAllImages.get(mImageVp.getCurrentItem());
-                if (mPreviewService.getMaxNum() == 1) {
+                if (mMaxNum == 1) {
                     mSelectImages.clear();
                     mSelectImages.add(imageInfo);
                 } else {
@@ -175,7 +171,7 @@ public class GalleryPreviewFragment extends Fragment {
             mEnsureTv.setSelected(false);
             mEnsureTv.setText("未选择");
         } else {
-            mEnsureTv.setText("完成(" + mSelectImages.size() + ")");
+            mEnsureTv.setText(String.format(Locale.CHINA, "完成(%d)", mSelectImages.size()));
             mEnsureTv.setSelected(true);
         }
     }
