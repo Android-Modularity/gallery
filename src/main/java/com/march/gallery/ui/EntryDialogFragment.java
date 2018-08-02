@@ -55,43 +55,27 @@ public class EntryDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entry_dialog, container, false);
-        view.findViewById(R.id.dialog_capture_tv).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCurAction = new Action() {
-                    @Override
-                    public void run() {
-                        Gallery.getInst().captureImgUseSystemCamera(mMixin);
-                    }
-                };
-                Permission.requestPermissions(getActivity(),
-                        mMixin, REQ_PERMISSION_CODE,
-                        mCurAction, Manifest.permission.CAMERA);
-                dismiss();
+        view.findViewById(R.id.dialog_capture_tv).setOnClickListener(v -> {
+            Action captureAction = () -> Gallery.getInst().captureImgUseSystemCamera(mMixin);
+            if (Permission.requestPermissions(mMixin, REQ_PERMISSION_CODE, Manifest.permission.CAMERA)) {
+                captureAction.run();
+            } else {
+                mCurAction = captureAction;
             }
+            dismiss();
         });
-        view.findViewById(R.id.dialog_gallery_tv).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCurAction = new Action() {
-                    @Override
-                    public void run() {
-                        Gallery.getInst().chooseImgUseDesignGallery(mMixin, getArguments());
-                    }
-                };
-                Permission.requestPermissions(getActivity(),
-                        mMixin, REQ_PERMISSION_CODE,
-                        mCurAction, Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                dismiss();
+        view.findViewById(R.id.dialog_gallery_tv).setOnClickListener(v -> {
+            Action captureAction = () -> Gallery.getInst().captureImgUseSystemCamera(mMixin);
+            if (Permission.requestPermissions(mMixin, REQ_PERMISSION_CODE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                captureAction.run();
+            } else {
+                mCurAction = captureAction;
             }
+            dismiss();
         });
-        view.findViewById(R.id.dialog_dismiss_tv).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
+        view.findViewById(R.id.dialog_dismiss_tv).setOnClickListener(v -> dismiss());
         return view;
     }
 
