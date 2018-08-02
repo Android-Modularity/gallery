@@ -1,8 +1,8 @@
 package com.march.gallery.ui;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +14,11 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.march.common.extensions.ActFragmentMixin;
+import com.march.common.extensions.Permission;
+import com.march.common.funcs.Action;
+import com.march.common.utils.ToastUtils;
+import com.march.gallery.Gallery;
 import com.march.gallery.R;
 
 /**
@@ -24,14 +29,27 @@ import com.march.gallery.R;
  */
 public class EntryDialogFragment extends DialogFragment {
 
+    public static final int REQ_PERMISSION_CODE = 199;
+
+    private ActFragmentMixin mMixin;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.dialog_theme);
+        mMixin = new ActFragmentMixin(this);
     }
 
-    private void executeOnPermissionGranted(String permission, Runnable runnable) {
+    private Action mCurAction;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (mCurAction != null && Permission.hasAllPermission(permissions, grantResults)) {
+            // mCurAction.run();
+            ToastUtils.show("获得权限执行");
+        }
     }
+
 
     @Nullable
     @Override
@@ -40,12 +58,31 @@ public class EntryDialogFragment extends DialogFragment {
         view.findViewById(R.id.dialog_capture_tv).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mCurAction = new Action() {
+                    @Override
+                    public void run() {
+                        Gallery.getInst().captureImgUseSystemCamera(mMixin);
+                    }
+                };
+                Permission.requestPermissions(getActivity(),
+                        mMixin, REQ_PERMISSION_CODE,
+                        mCurAction, Manifest.permission.CAMERA);
                 dismiss();
             }
         });
         view.findViewById(R.id.dialog_gallery_tv).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mCurAction = new Action() {
+                    @Override
+                    public void run() {
+                        Gallery.getInst().chooseImgUseDesignGallery(mMixin, getArguments());
+                    }
+                };
+                Permission.requestPermissions(getActivity(),
+                        mMixin, REQ_PERMISSION_CODE,
+                        mCurAction, Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 dismiss();
             }
         });
