@@ -21,7 +21,7 @@ public class GalleryListActivity extends FragmentContainerActivity {
 
     public static void startActivityForResult(Activity context, int maxNum, int requestCode) {
         Intent intent = new Intent(context, GalleryListActivity.class);
-        intent.putExtra(Gallery.KEY_LIMIT, maxNum);
+        intent.putExtra(Gallery.KEY_MAX_NUM, maxNum);
         context.startActivityForResult(intent, requestCode);
     }
 

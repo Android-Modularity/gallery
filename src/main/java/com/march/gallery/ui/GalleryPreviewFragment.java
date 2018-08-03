@@ -93,16 +93,16 @@ public class GalleryPreviewFragment extends Fragment {
         mAllImages = new ArrayList<>();
         mSelectImages = new ArrayList<>();
         if (arguments != null) {
-            ArrayList<GalleryImageInfo> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMGS);
+            ArrayList<GalleryImageInfo> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMG);
             if (!CheckUtils.isEmpty(allImgs)) {
                 mAllImages.addAll(allImgs);
             }
-            ArrayList<GalleryImageInfo> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMGS);
+            ArrayList<GalleryImageInfo> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMG);
             if (!CheckUtils.isEmpty(selectImgs)) {
                 mSelectImages.addAll(selectImgs);
             }
             mInitIndex = arguments.getInt(Gallery.KEY_INDEX, 0);
-            mMaxNum = arguments.getInt(Gallery.KEY_LIMIT, 0);
+            mMaxNum = arguments.getInt(Gallery.KEY_MAX_NUM, 0);
         }
         initView(view);
         return view;
@@ -180,7 +180,7 @@ public class GalleryPreviewFragment extends Fragment {
     private void publish() {
         Intent intent = new Intent();
         intent.putExtra(Gallery.KEY_COMPLETE, true);
-        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(mSelectImages));
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMG, new ArrayList<>(mSelectImages));
         if (getActivity() != null) {
             getActivity().setResult(Activity.RESULT_OK, intent);
             getActivity().finish();

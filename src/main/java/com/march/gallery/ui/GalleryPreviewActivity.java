@@ -32,10 +32,10 @@ public class GalleryPreviewActivity extends FragmentContainerActivity {
             int index,
             int maxNum) {
         Intent intent = new Intent(mixin.getContext(), GalleryPreviewActivity.class);
-        intent.putParcelableArrayListExtra(Gallery.KEY_ALL_IMGS, new ArrayList<Parcelable>(allImgs));
-        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<Parcelable>(selectImgs));
+        intent.putParcelableArrayListExtra(Gallery.KEY_ALL_IMG, new ArrayList<Parcelable>(allImgs));
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMG, new ArrayList<Parcelable>(selectImgs));
         intent.putExtra(Gallery.KEY_INDEX, index);
-        intent.putExtra(Gallery.KEY_LIMIT, maxNum);
+        intent.putExtra(Gallery.KEY_MAX_NUM, maxNum);
         mixin.startActivityForResult(intent, CODE_REQ_PREVIEW);
     }
 

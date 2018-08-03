@@ -22,13 +22,13 @@ import java.util.UUID;
  */
 public class Gallery {
 
-    public static final String KEY_LIMIT       = "KEY_LIMIT";
-    public static final String KEY_CROP        = "KEY_CROP";
-    public static final String KEY_ALL_IMGS    = "KEY_ALL_IMGS";
-    public static final String KEY_SELECT_IMGS = "KEY_SELECT_IMGS";
-    public static final String KEY_INDEX       = "KEY_INDEX";
-    public static final String KEY_COMPLETE    = "KEY_COMPLETE";
-    public static final String EVENT_SELECT    = "EVENT_SELECT";
+    public static final String KEY_MAX_NUM    = "KEY_MAX_NUM";
+    public static final String KEY_CROP       = "KEY_CROP";
+    public static final String KEY_ALL_IMG    = "KEY_ALL_IMG";
+    public static final String KEY_SELECT_IMG = "KEY_SELECT_IMG";
+    public static final String KEY_INDEX      = "KEY_INDEX";
+    public static final String KEY_COMPLETE   = "KEY_COMPLETE";
+    public static final String EVENT_SELECT   = "EVENT_SELECT";
 
 
     public static final int CROP_REQ_CODE           = 1001;

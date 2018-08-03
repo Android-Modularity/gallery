@@ -60,7 +60,7 @@ public class EntryDialogFragment extends DialogFragment {
             // only one pic can crop
             crop = false;
         }
-        bundle.putInt(Gallery.KEY_LIMIT, maxNum);
+        bundle.putInt(Gallery.KEY_MAX_NUM, maxNum);
         bundle.putBoolean(Gallery.KEY_CROP, crop);
         entryDialogFragment.setArguments(bundle);
         return entryDialogFragment;
@@ -76,7 +76,7 @@ public class EntryDialogFragment extends DialogFragment {
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.dialog_theme);
         mMixin = new AppUIMixin(this);
         if (getArguments() != null) {
-            mMaxNum = getArguments().getInt(Gallery.KEY_LIMIT, 0);
+            mMaxNum = getArguments().getInt(Gallery.KEY_MAX_NUM, 0);
             mCrop = getArguments().getBoolean(Gallery.KEY_CROP, false) && mMaxNum == 1;
         }
     }
@@ -115,11 +115,11 @@ public class EntryDialogFragment extends DialogFragment {
         }
     }
 
-    public void startCrop(File file) {
+    private void startCrop(File file) {
         mCropFile = Gallery.getInst().cropImg(mMixin, UriX.fromFile(getActivity(), file), 1, 1);
     }
 
-    public void publishResult(List<String> paths) {
+    private void publishResult(List<String> paths) {
         this.mResultListener.accept(paths);
         dismiss();
     }
@@ -132,7 +132,7 @@ public class EntryDialogFragment extends DialogFragment {
         }
         // 自定义相册
         if (requestCode == Gallery.DESIGN_GALLERY_REQ_CODE) {
-            ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
+            ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMG);
             if (GalleryImageInfos != null)
                 if (mCrop && GalleryImageInfos.size() == 1) {
                     startCrop(new File(GalleryImageInfos.get(0).getPath()));
@@ -181,7 +181,7 @@ public class EntryDialogFragment extends DialogFragment {
         }
     }
 
-    public File findSystemGalleryImg(Intent intent) {
+    private File findSystemGalleryImg(Intent intent) {
         String path = null;
         if (getActivity() == null || intent == null || intent.getData() == null) {
             return null;

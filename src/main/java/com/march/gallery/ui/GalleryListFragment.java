@@ -167,7 +167,7 @@ public class GalleryListFragment extends Fragment {
     }
 
     public void initCreateView(View view) {
-        mMaxNum = getArguments().getInt(Gallery.KEY_LIMIT, 1);
+        mMaxNum = getArguments().getInt(Gallery.KEY_MAX_NUM, 1);
         mPopCoverView = view.findViewById(R.id.view_pop_cover);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
         mTitleLeftTv = (TextView) view.findViewById(R.id.tv_title_left);
@@ -443,8 +443,8 @@ public class GalleryListFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            if (data.hasExtra(Gallery.KEY_SELECT_IMGS)) {
-                ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
+            if (data.hasExtra(Gallery.KEY_SELECT_IMG)) {
+                ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMG);
                 if (data.getBooleanExtra(Gallery.KEY_COMPLETE, false)) {
                     publish(GalleryImageInfos);
                 }
@@ -454,7 +454,7 @@ public class GalleryListFragment extends Fragment {
 
     private void publish(List<GalleryImageInfo> GalleryImageInfos) {
         Intent intent = new Intent();
-        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(GalleryImageInfos));
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMG, new ArrayList<>(GalleryImageInfos));
         if (getActivity() != null) {
             getActivity().setResult(Activity.RESULT_OK, intent);
             getActivity().finish();
