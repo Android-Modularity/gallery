@@ -7,6 +7,7 @@ import com.march.common.model.ImageInfo;
 import com.march.common.model.WeakContext;
 import com.march.common.utils.CheckUtils;
 import com.march.common.utils.LocalImageUtils;
+import com.march.gallery.Gallery;
 import com.march.gallery.model.GalleryImageInfo;
 import com.march.gallery.model.ImageDirInfo;
 
@@ -41,7 +42,9 @@ public abstract class ScanImageTask extends AsyncTask<Void, Void, ImageDirInfo> 
         for (Map.Entry<String, List<ImageInfo>> entry : imageListMap.entrySet()) {
             list = new ArrayList<>();
             for (ImageInfo imageInfo : entry.getValue()) {
-                list.add(new GalleryImageInfo(imageInfo));
+                if (Gallery.getInst().getGalleryAdapter().filterImg(imageInfo)) {
+                    list.add(new GalleryImageInfo(imageInfo));
+                }
             }
             mImageListMap.put(entry.getKey(), list);
         }

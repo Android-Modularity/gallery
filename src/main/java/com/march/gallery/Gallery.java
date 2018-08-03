@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 
 import com.march.common.extensions.AppUIMixin;
 import com.march.common.extensions.UriX;
+import com.march.gallery.adapter.GalleryAdapter;
 import com.march.gallery.ui.GalleryListActivity;
 
 import java.io.File;
@@ -57,6 +58,15 @@ public class Gallery {
     }
 
     private GalleryCfg mCfg;
+    private GalleryAdapter mGalleryAdapter = GalleryAdapter.EMPTY;
+
+    public GalleryAdapter getGalleryAdapter() {
+        return mGalleryAdapter;
+    }
+
+    public void setGalleryAdapter(GalleryAdapter galleryAdapter) {
+        mGalleryAdapter = galleryAdapter;
+    }
 
     public GalleryCfg getCfg() {
         return mCfg;
