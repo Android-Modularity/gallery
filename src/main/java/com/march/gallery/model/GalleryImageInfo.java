@@ -3,6 +3,8 @@ package com.march.gallery.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.march.common.model.ImageInfo;
+
 /**
  * CreateAt : 2016/10/31
  * Describe : 本地照片信息
@@ -25,7 +27,17 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
     private int width;
     private int height;
     private int fileId;
-    private boolean select;
+
+
+    public GalleryImageInfo(ImageInfo imageInfo) {
+        this.id = imageInfo.getId();
+        this.path = imageInfo.getPath();
+        this.name = imageInfo.getName();
+        this.date = imageInfo.getDate();
+        this.width = imageInfo.getWidth();
+        this.height = imageInfo.getHeight();
+    }
+
 
     public String getPath() {
         return path;
@@ -91,22 +103,17 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         this.status = status;
     }
 
-    public boolean isSelect() {
-        return select;
-    }
-
-    public void setSelect(boolean select) {
-        this.select = select;
-    }
 
     @Override
-    public int hashCode() {
-        return 1;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return super.equals(o) && path.equals(((GalleryImageInfo) o).getPath());
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof GalleryImageInfo)) {
+            return false;
+        }
+        GalleryImageInfo another = (GalleryImageInfo) obj;
+        return path.equals(another.path);
     }
 
     @Override
@@ -133,7 +140,7 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
 
     @Override
     public String toString() {
-        return "ImageInfo{" +
+        return "GalleryImageInfo{" +
                 "path='" + path + '\'' +
                 ", date='" + date + '\'' +
                 ", width=" + width +
@@ -156,10 +163,9 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         dest.writeInt(this.width);
         dest.writeInt(this.height);
         dest.writeInt(this.fileId);
-        dest.writeByte(this.select ? (byte) 1 : (byte) 0);
     }
 
-    protected GalleryImageInfo(Parcel in) {
+    public GalleryImageInfo(Parcel in) {
         this.id = (Integer) in.readValue(Integer.class.getClassLoader());
         this.path = in.readString();
         this.status = in.readInt();
@@ -168,7 +174,6 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         this.width = in.readInt();
         this.height = in.readInt();
         this.fileId = in.readInt();
-        this.select = in.readByte() != 0;
     }
 
     public static final Creator<GalleryImageInfo> CREATOR = new Creator<GalleryImageInfo>() {

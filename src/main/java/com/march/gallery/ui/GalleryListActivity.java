@@ -10,7 +10,6 @@ import android.support.v4.app.Fragment;
 import com.march.common.utils.StatusBarUtils;
 import com.march.common.utils.immersion.ImmersionStatusBarUtils;
 import com.march.gallery.Gallery;
-import com.march.gallery.list.GalleryListFragment;
 
 /**
  * CreateAt : 2018/8/1

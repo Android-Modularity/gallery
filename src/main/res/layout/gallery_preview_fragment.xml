@@ -13,7 +13,7 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:padding="20dp"
+            android:padding="10dp"
             android:id="@+id/siv_back"
             android:layout_width="45dp"
             android:src="@drawable/back_arrow"

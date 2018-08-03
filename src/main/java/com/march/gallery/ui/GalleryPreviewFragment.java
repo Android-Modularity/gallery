@@ -1,4 +1,4 @@
-package com.march.gallery.preview;
+package com.march.gallery.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -13,12 +13,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.march.common.model.ImageInfo;
+import com.march.common.Common;
+import com.march.common.extensions.MsgBus;
+import com.march.common.extensions.SizeX;
+import com.march.common.extensions.ViewX;
 import com.march.common.utils.CheckUtils;
-import com.march.common.utils.DimensUtils;
 import com.march.gallery.Gallery;
 import com.march.gallery.R;
-import com.march.gallery.common.CommonUtils;
+import com.march.gallery.model.GalleryImageInfo;
 import com.march.lightadapter.LightHolder;
 import com.march.lightadapter.pager.LightPagerAdapter;
 
@@ -26,23 +28,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+
 /**
  * CreateAt : 2018/3/2
- * Describe :
+ * Describe : 图片预览界面
  *
  * @author chendong
  */
 public class GalleryPreviewFragment extends Fragment {
 
-    private LightPagerAdapter<ImageInfo> mImagePagerAdapter;
-    private ViewPager                    mImageVp;
-    private TextView                     mEnsureTv;
-    private ImageView                    mSelectSiv;
+    private LightPagerAdapter<GalleryImageInfo> mImagePagerAdapter;
+    private ViewPager                           mImageVp;
+    private TextView                            mEnsureTv;
+    private ImageView                           mSelectSiv;
 
-    private List<ImageInfo> mAllImages;
-    private List<ImageInfo> mSelectImages;
-    private int             mInitIndex;
-    private int             mMaxNum;
+    private List<GalleryImageInfo> mAllImages;
+    private List<GalleryImageInfo> mSelectImages;
+    private int                    mInitIndex;
+    private int                    mMaxNum;
 
     private int width, height;
 
@@ -53,9 +56,7 @@ public class GalleryPreviewFragment extends Fragment {
         return fragment;
     }
 
-
-
-    public void update(List<ImageInfo> allImages, List<ImageInfo> selectImages, int index) {
+    public void update(List<GalleryImageInfo> allImages, List<GalleryImageInfo> selectImages, int index) {
         mAllImages = new ArrayList<>(allImages);
         mSelectImages = new ArrayList<>(selectImages);
         mInitIndex = index;
@@ -65,19 +66,19 @@ public class GalleryPreviewFragment extends Fragment {
         if (mImagePagerAdapter != null) {
             mImagePagerAdapter.notifyDataSetChanged();
         } else {
-            mImagePagerAdapter = new LightPagerAdapter<ImageInfo>(mAllImages, R.layout.gallery_preview_item) {
+            mImagePagerAdapter = new LightPagerAdapter<GalleryImageInfo>(mAllImages, R.layout.gallery_preview_item) {
                 @Override
-                public void onBindView(LightHolder holder, ImageInfo data) {
+                public void onBindView(LightHolder holder, GalleryImageInfo data) {
                     ImageView view = holder.getView(R.id.iv_image);
-                    Gallery.getGalleryService().loadImg(view.getContext(), data.getPath(), width, height, view);
+                    Common.getInst().getImgLoadAdapter().loadImg(view.getContext(), data.getPath(), width, height, view);
                 }
             };
             mImageVp.setAdapter(mImagePagerAdapter);
         }
         mImageVp.setCurrentItem(mInitIndex);
         if (mSelectSiv != null) {
-            ImageInfo imageInfo = mAllImages.get(mInitIndex);
-            updateSelectSiv(imageInfo);
+            GalleryImageInfo GalleryImageInfo = mAllImages.get(mInitIndex);
+            updateSelectStatus(GalleryImageInfo);
         }
         updateEnsureText();
     }
@@ -85,18 +86,18 @@ public class GalleryPreviewFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        width = getContext().getResources().getDisplayMetrics().widthPixels;
-        height = getContext().getResources().getDisplayMetrics().heightPixels - DimensUtils.dp2px(90);
+        width = SizeX.WIDTH;
+        height = SizeX.HEIGHT - SizeX.dp2px(90);
         View view = inflater.inflate(R.layout.gallery_preview_fragment, container, false);
         Bundle arguments = getArguments();
         mAllImages = new ArrayList<>();
         mSelectImages = new ArrayList<>();
         if (arguments != null) {
-            ArrayList<ImageInfo> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMGS);
+            ArrayList<GalleryImageInfo> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMGS);
             if (!CheckUtils.isEmpty(allImgs)) {
                 mAllImages.addAll(allImgs);
             }
-            ArrayList<ImageInfo> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMGS);
+            ArrayList<GalleryImageInfo> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMGS);
             if (!CheckUtils.isEmpty(selectImgs)) {
                 mSelectImages.addAll(selectImgs);
             }
@@ -107,13 +108,12 @@ public class GalleryPreviewFragment extends Fragment {
         return view;
     }
 
-    private void updateSelectSiv(ImageInfo imageInfo) {
-        if (!mSelectImages.contains(imageInfo)) {
-//            mSelectSiv.setClickable(false);
-            mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewSelectIcon);
+    // 更新选中图标
+    private void updateSelectStatus(GalleryImageInfo GalleryImageInfo) {
+        if (!mSelectImages.contains(GalleryImageInfo)) {
+            mSelectSiv.setImageResource(Gallery.getInst().getCfg().previewUnSelectIcon);
         } else {
-            mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewUnSelectIcon);
-//            mSelectSiv.setClickable(true);
+            mSelectSiv.setImageResource(Gallery.getInst().getCfg().previewSelectIcon);
         }
     }
 
@@ -125,29 +125,28 @@ public class GalleryPreviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 updateEnsureText();
-                ImageInfo imageInfo = mAllImages.get(mImageVp.getCurrentItem());
+                GalleryImageInfo imageInfo = mAllImages.get(mImageVp.getCurrentItem());
                 if (mMaxNum == 1) {
                     mSelectImages.clear();
                     mSelectImages.add(imageInfo);
                 } else {
-                    CommonUtils.addOrRemoveForContains(mSelectImages, imageInfo);
+                    if (mSelectImages.contains(imageInfo)) {
+                        mSelectImages.remove(imageInfo);
+                    } else if (mSelectImages.size() < mMaxNum) {
+                        mSelectImages.add(imageInfo);
+                    }
                 }
-                updateSelectSiv(imageInfo);
+                updateSelectStatus(imageInfo);
                 updateEnsureText();
+                MsgBus.getInst().post(Gallery.EVENT_SELECT, imageInfo);
             }
         });
-        view.findViewById(R.id.siv_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getActivity().onBackPressed();
+        ViewX.click(view, R.id.siv_back, v -> {
+            if (getActivity() != null) {
+                getActivity().finish();
             }
         });
-        mEnsureTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                publish(mSelectImages);
-            }
-        });
+        mEnsureTv.setOnClickListener(v -> publish());
         mImageVp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -156,8 +155,8 @@ public class GalleryPreviewFragment extends Fragment {
 
             @Override
             public void onPageSelected(int position) {
-                ImageInfo imageInfo = mAllImages.get(position);
-                updateSelectSiv(imageInfo);
+                GalleryImageInfo GalleryImageInfo = mAllImages.get(position);
+                updateSelectStatus(GalleryImageInfo);
             }
 
             @Override
@@ -178,12 +177,14 @@ public class GalleryPreviewFragment extends Fragment {
         }
     }
 
-    private void publish(List<ImageInfo> imageInfos) {
+    private void publish() {
         Intent intent = new Intent();
-        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(imageInfos));
+        intent.putExtra(Gallery.KEY_COMPLETE, true);
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(mSelectImages));
         if (getActivity() != null) {
             getActivity().setResult(Activity.RESULT_OK, intent);
             getActivity().finish();
         }
     }
+
 }

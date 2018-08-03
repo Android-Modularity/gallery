@@ -7,12 +7,11 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
-import com.march.common.extensions.ActFragmentMixin;
-import com.march.common.model.ImageInfo;
+import com.march.common.extensions.AppUIMixin;
+import com.march.gallery.model.GalleryImageInfo;
 import com.march.common.utils.StatusBarUtils;
 import com.march.common.utils.immersion.ImmersionStatusBarUtils;
 import com.march.gallery.Gallery;
-import com.march.gallery.preview.GalleryPreviewFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +26,16 @@ public class GalleryPreviewActivity extends FragmentContainerActivity {
 
     public static final int CODE_REQ_PREVIEW = 100;
 
-    public static void startActivityForResult(ActFragmentMixin mixin, List<ImageInfo> allImgs, List<ImageInfo> selectImgs, int index) {
+    public static void startActivityForResult(AppUIMixin mixin,
+            List<GalleryImageInfo> allImgs,
+            List<GalleryImageInfo> selectImgs,
+            int index,
+            int maxNum) {
         Intent intent = new Intent(mixin.getContext(), GalleryPreviewActivity.class);
         intent.putParcelableArrayListExtra(Gallery.KEY_ALL_IMGS, new ArrayList<Parcelable>(allImgs));
         intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<Parcelable>(selectImgs));
         intent.putExtra(Gallery.KEY_INDEX, index);
+        intent.putExtra(Gallery.KEY_LIMIT, maxNum);
         mixin.startActivityForResult(intent, CODE_REQ_PREVIEW);
     }
 
@@ -42,8 +46,22 @@ public class GalleryPreviewActivity extends FragmentContainerActivity {
         ImmersionStatusBarUtils.setStatusBarLightMode(this);
     }
 
+    private GalleryPreviewFragment mFragment;
+
     @Override
     Fragment getFragment() {
-        return GalleryPreviewFragment.newInst(getIntent().getExtras());
+        if (mFragment == null) {
+            mFragment = GalleryPreviewFragment.newInst(getIntent().getExtras());
+        }
+        return mFragment;
     }
+
+
+//    @Override
+//    public void finish() {
+//        if (!mFragment.isComplete()) {
+//            mFragment.publishOnBack();
+//        }
+//        super.finish();
+//    }
 }

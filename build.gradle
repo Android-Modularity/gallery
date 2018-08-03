@@ -14,7 +14,9 @@ android {
 }
 
 dependencies {
-    implementation libs.common
+//    implementation libs.common
+    implementation project(path: ':common')
+
     implementation libs.lightadapter
     implementation libs.appcompat_v7
     implementation libs.design

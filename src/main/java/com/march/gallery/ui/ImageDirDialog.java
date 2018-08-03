@@ -1,4 +1,4 @@
-package com.march.gallery;
+package com.march.gallery.ui;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -10,7 +10,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.march.common.Common;
 import com.march.common.utils.DimensUtils;
+import com.march.gallery.Gallery;
+import com.march.gallery.R;
 import com.march.gallery.model.ImageDirInfo;
 import com.march.lightadapter.LightAdapter;
 import com.march.lightadapter.LightHolder;
@@ -77,12 +80,12 @@ public class ImageDirDialog extends Dialog {
             @Override
             public void onBindView(LightHolder holder, final ImageDirInfo data, int pos, int type) {
                 holder.setText(R.id.tv_dir_name, data.getDirName())
-                        .setImage(R.id.iv_dir_sign, Gallery.getGalleryService().getConfig().dirSignIcon)
+                        .setImage(R.id.iv_dir_sign, Gallery.getInst().getCfg().dirSignIcon)
                         .setText(R.id.tv_dir_img_num, String.valueOf(data.getPicNum()))
                         .setCallback(R.id.iv_dir_cover, new LightHolder.Callback<ImageView>() {
                             @Override
                             public void bind(LightHolder holder, ImageView view, int pos) {
-                                Gallery.getGalleryService().loadImg(getContext(), data.getCoverInfo().getPath(),
+                                Common.getInst().getImgLoadAdapter().loadImg(getContext(), data.getCoverInfo().getPath(),
                                         size, size, holder.<ImageView>getView(R.id.iv_dir_cover));
                             }
                         });

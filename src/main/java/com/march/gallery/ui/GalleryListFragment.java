@@ -1,4 +1,4 @@
-package com.march.gallery.list;
+package com.march.gallery.ui;
 
 import android.animation.ObjectAnimator;
 import android.app.Activity;
@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,17 +16,16 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.march.common.extensions.ActFragmentMixin;
-import com.march.common.model.ImageInfo;
+import com.march.common.Common;
+import com.march.common.extensions.AppUIMixin;
+import com.march.common.extensions.MsgBus;
 import com.march.common.utils.CheckUtils;
 import com.march.common.utils.ToastUtils;
 import com.march.gallery.Gallery;
-import com.march.gallery.ImageDirDialog;
-import com.march.gallery.ImageDirPop;
 import com.march.gallery.R;
 import com.march.gallery.common.ScanImageTask;
+import com.march.gallery.model.GalleryImageInfo;
 import com.march.gallery.model.ImageDirInfo;
-import com.march.gallery.ui.GalleryPreviewActivity;
 import com.march.lightadapter.LightAdapter;
 import com.march.lightadapter.LightHolder;
 import com.march.lightadapter.LightInjector;
@@ -55,8 +53,6 @@ import java.util.concurrent.Executors;
 public class GalleryListFragment extends Fragment {
 
 
-    public static final int PREVIEW_REQ_CODE = 100;
-
     private static final String PIC_DATE_PATTERN = "yyyy年M月d日 HH:mm:ss";
 
     private int mSpanCount = 4;
@@ -68,44 +64,27 @@ public class GalleryListFragment extends Fragment {
     private TextView     mTitleLeftTv, mTitleCenterTv, mTitleRightTv;
     private ProgressBar mProgressBar;
 
-    private LightAdapter<ImageInfo> mImageAdapter;
-    private GridLayoutManager mLayoutManager;
+    private LightAdapter<GalleryImageInfo> mImageAdapter;
+    private GridLayoutManager              mLayoutManager;
 
     private ImageDirDialog   mDirDialog;
-    private ImageDirPop      mImageDirPop;
     private SimpleDateFormat mDateFormat;
 
-    private SelectManager<ImageInfo> mSelectManager;
-    private ObjectAnimator mFadeOutAnim;
-    private MyScanImageTask mScanImageTask;
+    private SelectManager<GalleryImageInfo> mSelectManager;
+    private ObjectAnimator                  mFadeOutAnim;
+    private MyScanImageTask                 mScanImageTask;
 
-    private Map<String, List<ImageInfo>> mImageListMap;
-    private int                          mMaxNum;
-    private View                         mBotLy;
-    private View                         mPopCoverView;
-    private View                         mPreviewTv;
+    private Map<String, List<GalleryImageInfo>> mImageListMap;
+    private int                                 mMaxNum;
+    private View                                mBotLy;
+    private View                                mPopCoverView;
+    private View                                mPreviewTv;
+    private MsgBus.Subscriber                   mSubscriber;
 
     public static GalleryListFragment newInst(Bundle bundle) {
         GalleryListFragment fragment = new GalleryListFragment();
         fragment.setArguments(bundle);
         return fragment;
-    }
-
-    public static GalleryListFragment newInst(int limit) {
-        GalleryListFragment fragment = new GalleryListFragment();
-        Bundle bundle = new Bundle();
-        bundle.putInt(Gallery.KEY_LIMIT, limit);
-        fragment.setArguments(bundle);
-        return fragment;
-    }
-
-
-    public void addToContainer(FragmentActivity activity, int containerId) {
-        activity.getSupportFragmentManager()
-                .beginTransaction()
-                .add(containerId, this, "list")
-                .show(this)
-                .commit();
     }
 
 
@@ -119,11 +98,11 @@ public class GalleryListFragment extends Fragment {
         }
 
         @Override
-        public void onScanSuccess(Map<String, List<ImageInfo>> imageListMap, List<ImageDirInfo> mDirInfos, ImageDirInfo dirInfo) {
+        public void onScanSuccess(Map<String, List<GalleryImageInfo>> imageListMap, List<ImageDirInfo> mDirInfos, ImageDirInfo dirInfo) {
             GalleryListFragment fragment = mHost.get();
             fragment.mImageListMap = imageListMap;
             fragment.newDirDialog(mDirInfos);
-            fragment.newDirPop(mDirInfos);
+            // fragment.newDirPop(mDirInfos);
             fragment.newDirDialog(mDirInfos);
             fragment.mProgressBar.setVisibility(View.GONE);
             fragment.updateOnChangeDir(dirInfo);
@@ -141,7 +120,7 @@ public class GalleryListFragment extends Fragment {
     }
 
     public void clickPreviewImages() { // 点击预览，只预览选中的
-        List<ImageInfo> results = mSelectManager.getResults();
+        List<GalleryImageInfo> results = mSelectManager.getResults();
         if (CheckUtils.isEmpty(results)) {
             ToastUtils.show("请先选择照片");
             return;
@@ -163,18 +142,21 @@ public class GalleryListFragment extends Fragment {
         }
     }
 
-    public void updateOnResume() {
-        if (mImageAdapter != null) {
-            mImageAdapter.update().notifyDataSetChanged();
-        }
-        updateTitleRight();
-    }
-
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.gallery_list_fragment, container, false);
+        mSubscriber = MsgBus.getInst().register(Gallery.EVENT_SELECT, (MsgBus.SubscriberInvoker<GalleryImageInfo>) data -> {
+            int index = -1;
+            for (GalleryImageInfo GalleryImageInfo : mCurrentImages) {
+                if (GalleryImageInfo.getPath().equals(data.getPath())) {
+                    index = mCurrentImages.indexOf(GalleryImageInfo);
+                    break;
+                }
+            }
+            mSelectManager.select(index);
+        });
         initCreateView(view);
         initAfterViewCreated();
         return view;
@@ -247,7 +229,7 @@ public class GalleryListFragment extends Fragment {
                 }
                 // 确认按钮
                 else if (v.getId() == R.id.tv_title_right) {
-                    List<ImageInfo> selectDatas = mSelectManager.getResults();
+                    List<GalleryImageInfo> selectDatas = mSelectManager.getResults();
                     if (selectDatas.size() > 0) {
                         publish(selectDatas);
                     } else {
@@ -300,25 +282,25 @@ public class GalleryListFragment extends Fragment {
         });
     }
 
-    public void createOrUpdateAdapter(List<ImageInfo> imageInfos) {
-        if (CheckUtils.isEmpty(imageInfos)) {
+    public void createOrUpdateAdapter(List<GalleryImageInfo> GalleryImageInfos) {
+        if (CheckUtils.isEmpty(GalleryImageInfos)) {
             return;
         }
         if (mImageAdapter != null) {
-            mImageAdapter.update().update(imageInfos);
+            mImageAdapter.update().update(GalleryImageInfos);
             return;
         }
 
         // 创建adapter
-        mImageAdapter = new LightAdapter<ImageInfo>(getContext(), imageInfos, R.layout.gallery_list_item) {
+        mImageAdapter = new LightAdapter<GalleryImageInfo>(getContext(), GalleryImageInfos, R.layout.gallery_list_item) {
             @Override
-            public void onBindView(LightHolder holder, final ImageInfo data, final int pos, int type) {
+            public void onBindView(LightHolder holder, final GalleryImageInfo data, final int pos, int type) {
                 holder.setLayoutParams(mItemSize, mItemSize)
                         .setVisibleGone(R.id.view_single_cover, isSingleMode())
                         .setClick(R.id.view_single_cover, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                ArrayList<ImageInfo> list = new ArrayList<>();
+                                ArrayList<GalleryImageInfo> list = new ArrayList<>();
                                 list.add(data);
                                 publish(list);
                             }
@@ -332,19 +314,19 @@ public class GalleryListFragment extends Fragment {
                                     }
                                 });
                 ImageView iv = holder.getView(R.id.image_item_iv);
-                Gallery.getGalleryService().loadImg(getContext(), data.getPath(), mItemSize, mItemSize, iv);
+                Common.getInst().getImgLoadAdapter().loadImg(getContext(), data.getPath(), mItemSize, mItemSize, iv);
             }
         };
         int type = mMaxNum == 1 ? SelectManager.TYPE_SINGLE : SelectManager.TYPE_MULTI;
-        mSelectManager = new SelectManager<>(mImageAdapter, type, new AdapterViewBinder<ImageInfo>() {
+        mSelectManager = new SelectManager<>(mImageAdapter, type, new AdapterViewBinder<GalleryImageInfo>() {
             @Override
-            public void onBindViewHolder(LightHolder holder, ImageInfo data, int pos, int type) {
+            public void onBindViewHolder(LightHolder holder, GalleryImageInfo data, int pos, int type) {
                 bindItemView(holder, data);
             }
         });
-        mSelectManager.setSelectListener(new SelectManager.OnSelectListener<ImageInfo>() {
+        mSelectManager.setSelectListener(new SelectManager.OnSelectListener<GalleryImageInfo>() {
             @Override
-            public boolean onBeforeSelect(boolean toSelect, ImageInfo data) {
+            public boolean onBeforeSelect(boolean toSelect, GalleryImageInfo data) {
                 if (toSelect) {
                     if (mSelectManager.getResults().size() >= mMaxNum) {
                         ToastUtils.show("最多选择" + mMaxNum + "张");
@@ -355,16 +337,16 @@ public class GalleryListFragment extends Fragment {
             }
 
             @Override
-            public void onAfterSelect(boolean toSelect, ImageInfo data) {
+            public void onAfterSelect(boolean toSelect, GalleryImageInfo data) {
                 updateTitleRight();
             }
         });
         // 点击监听
-        mImageAdapter.setOnItemListener(new SimpleItemListener<ImageInfo>() {
+        mImageAdapter.setOnItemListener(new SimpleItemListener<GalleryImageInfo>() {
             @Override
-            public void onClick(int pos, LightHolder holder, ImageInfo data) {
+            public void onClick(int pos, LightHolder holder, GalleryImageInfo data) {
                 if (isSingleMode()) {
-                    ArrayList<ImageInfo> list = new ArrayList<>();
+                    ArrayList<GalleryImageInfo> list = new ArrayList<>();
                     list.add(data);
                     publish(list);
                     return;
@@ -379,7 +361,7 @@ public class GalleryListFragment extends Fragment {
 
     private void updateOtherHolder() {
         // 更新其他的holder
-        ImageInfo data;
+        GalleryImageInfo data;
         TextView tv;
         for (LightHolder holder : mImageAdapter.getHolderSet()) {
             if (holder != null
@@ -391,7 +373,7 @@ public class GalleryListFragment extends Fragment {
         }
     }
 
-    private void bindItemView(LightHolder holder, ImageInfo data) {
+    private void bindItemView(LightHolder holder, GalleryImageInfo data) {
         if (data == null) {
             return;
         }
@@ -405,7 +387,7 @@ public class GalleryListFragment extends Fragment {
         holder.setVisibleGone(R.id.cover_select_image, isSelect)
                 .setSelect(R.id.select_yes_sign_tv, true)
                 .setVisibleGone(R.id.select_yes_sign_tv, isSelect)
-                .setImage(R.id.select_no_sign_iv, Gallery.getGalleryService().getConfig().itemNoSelectIcon)
+                .setImage(R.id.select_no_sign_iv, Gallery.getInst().getCfg().itemNoSelectIcon)
                 .setVisibleGone(R.id.select_no_sign_iv, !isSelect);
         if (mMaxNum > 1) {
             String selectNum = isSelect ? String.valueOf(mSelectManager.indexOf(data) + 1) : "";
@@ -413,7 +395,7 @@ public class GalleryListFragment extends Fragment {
         }
     }
 
-    private List<ImageInfo> mCurrentImages;
+    private List<GalleryImageInfo> mCurrentImages;
 
     private void newDirDialog(List<ImageDirInfo> imageDirInfos) {
         mDirDialog = new ImageDirDialog(getActivity(), imageDirInfos);
@@ -425,15 +407,6 @@ public class GalleryListFragment extends Fragment {
         });
     }
 
-    private void newDirPop(List<ImageDirInfo> imageDirInfos) {
-        mImageDirPop = new ImageDirPop(getActivity(), imageDirInfos);
-        mImageDirPop.setListener(new ImageDirPop.OnImageDirClickListener() {
-            @Override
-            public void onClickDir(int pos, ImageDirInfo dir) {
-                updateOnChangeDir(dir);
-            }
-        });
-    }
 
     // 显示文件夹 dialog
     private void showDirDialog() {
@@ -443,17 +416,6 @@ public class GalleryListFragment extends Fragment {
         mPopCoverView.setVisibility(View.GONE);
         mDirDialog.show();
 
-//        mPopCoverView.setAlpha(1);
-//        if (mImageDirPop == null) {
-//            return;
-//        }
-//        mImageDirPop.showAtLocation(mBotLy, Gravity.BOTTOM, 0, CommonUtils.dp2px(getContext(), 45));
-//        mImageDirPop.setOnDismissListener(new PopupWindow.OnDismissListener() {
-//            @Override
-//            public void onDismiss() {
-//                mPopCoverView.setAlpha(0);
-//            }
-//        });
     }
 
     private void stopFadeOutAnim() {
@@ -482,14 +444,17 @@ public class GalleryListFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
             if (data.hasExtra(Gallery.KEY_SELECT_IMGS)) {
-                publish(data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS));
+                ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
+                if (data.getBooleanExtra(Gallery.KEY_COMPLETE, false)) {
+                    publish(GalleryImageInfos);
+                }
             }
         }
     }
 
-    private void publish(List<ImageInfo> imageInfos) {
+    private void publish(List<GalleryImageInfo> GalleryImageInfos) {
         Intent intent = new Intent();
-        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(imageInfos));
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(GalleryImageInfos));
         if (getActivity() != null) {
             getActivity().setResult(Activity.RESULT_OK, intent);
             getActivity().finish();
@@ -497,33 +462,21 @@ public class GalleryListFragment extends Fragment {
     }
 
 
-    private void previewImages(List<ImageInfo> allImages, List<ImageInfo> selectImages, int index) {
-        GalleryPreviewActivity.startActivityForResult(new ActFragmentMixin(this), allImages, selectImages, index);
-//
-//        FragmentTransaction transaction = getActivity()
-//                .getSupportFragmentManager()
-//                .beginTransaction()
-//                .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out);
-//        mGalleryPreviewFragment = new GalleryPreviewFragment();
-//        mGalleryPreviewFragment.setPreviewService(this);
-//        transaction.add(Gallery.getGalleryService().getPreviewContainerId(), mGalleryPreviewFragment, "preview");
-//        transaction.show(mGalleryPreviewFragment).commit();
-//        mGalleryPreviewFragment.update(allImages, selectImages, index);
+    private void previewImages(List<GalleryImageInfo> allImages, List<GalleryImageInfo> selectImages, int index) {
+        List<GalleryImageInfo> tempAllImgs = new ArrayList<>();
+        if (allImages.size() > 100) {
+            tempAllImgs.addAll(allImages.subList(Math.max(0, index - 50), Math.min(allImages.size() - 1, index + 50)));
+        } else {
+            tempAllImgs.addAll(allImages);
+        }
+        GalleryPreviewActivity.startActivityForResult(new AppUIMixin(this),
+                tempAllImgs, selectImages, index, mMaxNum);
     }
 
 
-//    public boolean onBackPressed() {
-//        if (mGalleryPreviewFragment != null && !mGalleryPreviewFragment.isHidden()) {
-//            getActivity()
-//                    .getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out)
-//                    .hide(mGalleryPreviewFragment)
-//                    .remove(mGalleryPreviewFragment)
-//                    .commit();
-//            return true;
-//        }
-//        return false;
-//    }
-
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        MsgBus.getInst().unRegister(mSubscriber);
+    }
 }

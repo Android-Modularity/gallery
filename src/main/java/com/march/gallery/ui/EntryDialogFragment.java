@@ -18,13 +18,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.march.common.extensions.ActFragmentMixin;
+import com.march.common.extensions.AppUIMixin;
 import com.march.common.extensions.ListX;
 import com.march.common.extensions.Permission;
 import com.march.common.extensions.UriX;
 import com.march.common.funcs.Action;
 import com.march.common.funcs.Consumer;
-import com.march.common.model.ImageInfo;
+import com.march.gallery.model.GalleryImageInfo;
 import com.march.common.utils.FileUtils;
 import com.march.common.utils.ToastUtils;
 import com.march.gallery.Gallery;
@@ -44,18 +44,22 @@ public class EntryDialogFragment extends DialogFragment {
 
     public static final int REQ_PERMISSION_CODE = 199;
 
-    private ActFragmentMixin mMixin;
-    private Action           mCurAction;
-    private File             mCropFile;
-    private File             mCaptureFile;
-    private boolean          mCrop;
-    private int              mMaxNum;
+    private AppUIMixin mMixin;
+    private Action     mCurAction;
+    private File       mCropFile;
+    private File       mCaptureFile;
+    private boolean    mCrop;
+    private int        mMaxNum;
 
     private Consumer<List<String>> mResultListener;
 
     public static EntryDialogFragment newInst(int maxNum, boolean crop) {
         EntryDialogFragment entryDialogFragment = new EntryDialogFragment();
         Bundle bundle = new Bundle();
+        if (maxNum != 1) {
+            // only one pic can crop
+            crop = false;
+        }
         bundle.putInt(Gallery.KEY_LIMIT, maxNum);
         bundle.putBoolean(Gallery.KEY_CROP, crop);
         entryDialogFragment.setArguments(bundle);
@@ -70,7 +74,7 @@ public class EntryDialogFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.dialog_theme);
-        mMixin = new ActFragmentMixin(this);
+        mMixin = new AppUIMixin(this);
         if (getArguments() != null) {
             mMaxNum = getArguments().getInt(Gallery.KEY_LIMIT, 0);
             mCrop = getArguments().getBoolean(Gallery.KEY_CROP, false) && mMaxNum == 1;
@@ -112,25 +116,29 @@ public class EntryDialogFragment extends DialogFragment {
     }
 
     public void startCrop(File file) {
-        mCropFile = Gallery.getInst().cropImg(mMixin, UriX.fromFile(getActivity(), file), 100, 100);
+        mCropFile = Gallery.getInst().cropImg(mMixin, UriX.fromFile(getActivity(), file), 1, 1);
+    }
+
+    public void publishResult(List<String> paths) {
+        this.mResultListener.accept(paths);
+        dismiss();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ToastUtils.show("onActivityResult");
-        if (resultCode != Activity.RESULT_OK && getActivity() == null) {
+        if (resultCode != Activity.RESULT_OK || getActivity() == null) {
             return;
         }
         // 自定义相册
         if (requestCode == Gallery.DESIGN_GALLERY_REQ_CODE) {
-            ArrayList<ImageInfo> imageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
-            if (imageInfos != null)
-                if (mCrop && imageInfos.size() == 1) {
-                    startCrop(new File(imageInfos.get(0).getPath()));
+            ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
+            if (GalleryImageInfos != null)
+                if (mCrop && GalleryImageInfos.size() == 1) {
+                    startCrop(new File(GalleryImageInfos.get(0).getPath()));
                 } else {
                     // 发布结果
-                    mResultListener.accept(ListX.map(imageInfos, ImageInfo::getPath));
+                    publishResult(ListX.map(GalleryImageInfos, GalleryImageInfo::getPath));
                 }
             else {
                 ToastUtils.show("获取图片失败[-1]～");
@@ -144,7 +152,7 @@ public class EntryDialogFragment extends DialogFragment {
                     startCrop(systemGalleryImg);
                 } else {
                     // 发布结果
-                    mResultListener.accept(ListX.listOf(systemGalleryImg.getAbsolutePath()));
+                    publishResult(ListX.listOf(systemGalleryImg.getAbsolutePath()));
                 }
             } else {
                 ToastUtils.show("获取图片失败[0]～");
@@ -156,7 +164,7 @@ public class EntryDialogFragment extends DialogFragment {
                     startCrop(mCaptureFile);
                 } else {
                     // 发布结果
-                    mResultListener.accept(ListX.listOf(mCaptureFile.getAbsolutePath()));
+                    publishResult(ListX.listOf(mCaptureFile.getAbsolutePath()));
                 }
             } else {
                 ToastUtils.show("获取图片失败[1]~");
@@ -166,12 +174,11 @@ public class EntryDialogFragment extends DialogFragment {
         if (requestCode == Gallery.CROP_REQ_CODE) {
             if (!FileUtils.isNotExist(mCropFile)) {
                 // 发布结果
-                mResultListener.accept(ListX.listOf(mCropFile.getAbsolutePath()));
+                publishResult(ListX.listOf(mCropFile.getAbsolutePath()));
             } else {
                 ToastUtils.show("获取图片失败[2]~");
             }
         }
-        dismiss();
     }
 
     public File findSystemGalleryImg(Intent intent) {

@@ -1,10 +1,6 @@
 package com.march.gallery.model;
 
 
-
-import com.march.common.model.ImageInfo;
-
-
 /**
  * Project  : CommonLib
  * Package  : com.march.baselib
@@ -17,9 +13,9 @@ public class ImageDirInfo implements Comparable<ImageDirInfo> {
 
     private int       picNum;
     private String    dirName;
-    private ImageInfo coverInfo;
+    private GalleryImageInfo coverInfo;
 
-    public ImageDirInfo(int picNum, String dirName, ImageInfo coverInfo) {
+    public ImageDirInfo(int picNum, String dirName, GalleryImageInfo coverInfo) {
         this.picNum = picNum;
         this.dirName = dirName;
         this.coverInfo = coverInfo;
@@ -34,7 +30,7 @@ public class ImageDirInfo implements Comparable<ImageDirInfo> {
         return dirName;
     }
 
-    public ImageInfo getCoverInfo() {
+    public GalleryImageInfo getCoverInfo() {
         return coverInfo;
     }
 
