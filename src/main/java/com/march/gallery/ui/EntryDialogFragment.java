@@ -1,9 +1,13 @@
 package com.march.gallery.ui;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -15,11 +19,20 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.march.common.extensions.ActFragmentMixin;
+import com.march.common.extensions.ListX;
 import com.march.common.extensions.Permission;
+import com.march.common.extensions.UriX;
 import com.march.common.funcs.Action;
+import com.march.common.funcs.Consumer;
+import com.march.common.model.ImageInfo;
+import com.march.common.utils.FileUtils;
 import com.march.common.utils.ToastUtils;
 import com.march.gallery.Gallery;
 import com.march.gallery.R;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CreateAt : 2018/8/2
@@ -32,21 +45,35 @@ public class EntryDialogFragment extends DialogFragment {
     public static final int REQ_PERMISSION_CODE = 199;
 
     private ActFragmentMixin mMixin;
+    private Action           mCurAction;
+    private File             mCropFile;
+    private File             mCaptureFile;
+    private boolean          mCrop;
+    private int              mMaxNum;
+
+    private Consumer<List<String>> mResultListener;
+
+    public static EntryDialogFragment newInst(int maxNum, boolean crop) {
+        EntryDialogFragment entryDialogFragment = new EntryDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(Gallery.KEY_LIMIT, maxNum);
+        bundle.putBoolean(Gallery.KEY_CROP, crop);
+        entryDialogFragment.setArguments(bundle);
+        return entryDialogFragment;
+    }
+
+    public void setResultListener(Consumer<List<String>> resultListener) {
+        mResultListener = resultListener;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.dialog_theme);
         mMixin = new ActFragmentMixin(this);
-    }
-
-    private Action mCurAction;
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (mCurAction != null && Permission.hasAllPermission(permissions, grantResults)) {
-            // mCurAction.run();
-            ToastUtils.show("获得权限执行");
+        if (getArguments() != null) {
+            mMaxNum = getArguments().getInt(Gallery.KEY_LIMIT, 0);
+            mCrop = getArguments().getBoolean(Gallery.KEY_CROP, false) && mMaxNum == 1;
         }
     }
 
@@ -56,34 +83,121 @@ public class EntryDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entry_dialog, container, false);
         view.findViewById(R.id.dialog_capture_tv).setOnClickListener(v -> {
-            Action captureAction = () -> Gallery.getInst().captureImgUseSystemCamera(mMixin);
+            Action captureAction = () -> mCaptureFile = Gallery.getInst().captureImgUseSystemCamera(mMixin);
             if (Permission.requestPermissions(mMixin, REQ_PERMISSION_CODE, Manifest.permission.CAMERA)) {
                 captureAction.run();
             } else {
                 mCurAction = captureAction;
             }
-            dismiss();
         });
         view.findViewById(R.id.dialog_gallery_tv).setOnClickListener(v -> {
-            Action captureAction = () -> Gallery.getInst().captureImgUseSystemCamera(mMixin);
+            Action galleryAction = () -> Gallery.getInst().chooseImgUseDesignGallery(mMixin, getArguments());
             if (Permission.requestPermissions(mMixin, REQ_PERMISSION_CODE,
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                captureAction.run();
+                galleryAction.run();
             } else {
-                mCurAction = captureAction;
+                mCurAction = galleryAction;
             }
-            dismiss();
         });
         view.findViewById(R.id.dialog_dismiss_tv).setOnClickListener(v -> dismiss());
         return view;
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (Permission.hasAllPermission(permissions, grantResults)) {
+            mCurAction.run();
+        }
+    }
+
+    public void startCrop(File file) {
+        mCropFile = Gallery.getInst().cropImg(mMixin, UriX.fromFile(getActivity(), file), 100, 100);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        ToastUtils.show("onActivityResult");
+        if (resultCode != Activity.RESULT_OK && getActivity() == null) {
+            return;
+        }
+        // 自定义相册
+        if (requestCode == Gallery.DESIGN_GALLERY_REQ_CODE) {
+            ArrayList<ImageInfo> imageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
+            if (imageInfos != null)
+                if (mCrop && imageInfos.size() == 1) {
+                    startCrop(new File(imageInfos.get(0).getPath()));
+                } else {
+                    // 发布结果
+                    mResultListener.accept(ListX.map(imageInfos, ImageInfo::getPath));
+                }
+            else {
+                ToastUtils.show("获取图片失败[-1]～");
+            }
+        }
+        // 相册返回,存放在path路径的文件中
+        if (requestCode == Gallery.SYSTEM_GALLERY_REQ_CODE) {
+            File systemGalleryImg = findSystemGalleryImg(data);
+            if (!FileUtils.isNotExist(systemGalleryImg)) {
+                if (mCrop) {
+                    startCrop(systemGalleryImg);
+                } else {
+                    // 发布结果
+                    mResultListener.accept(ListX.listOf(systemGalleryImg.getAbsolutePath()));
+                }
+            } else {
+                ToastUtils.show("获取图片失败[0]～");
+            }
+        }
+        if (requestCode == Gallery.CAPTURE_REQ_CODE) {
+            if (!FileUtils.isNotExist(mCaptureFile)) {
+                if (mCrop) {
+                    startCrop(mCaptureFile);
+                } else {
+                    // 发布结果
+                    mResultListener.accept(ListX.listOf(mCaptureFile.getAbsolutePath()));
+                }
+            } else {
+                ToastUtils.show("获取图片失败[1]~");
+            }
+        }
+        // 裁剪返回
+        if (requestCode == Gallery.CROP_REQ_CODE) {
+            if (!FileUtils.isNotExist(mCropFile)) {
+                // 发布结果
+                mResultListener.accept(ListX.listOf(mCropFile.getAbsolutePath()));
+            } else {
+                ToastUtils.show("获取图片失败[2]~");
+            }
+        }
+        dismiss();
     }
+
+    public File findSystemGalleryImg(Intent intent) {
+        String path = null;
+        if (getActivity() == null || intent == null || intent.getData() == null) {
+            return null;
+        }
+        // 获得相册中图片的路径
+        if ("file".equals(intent.getData().getScheme())) {
+            path = intent.getData().getPath();
+        } else if ("content".equals(intent.getData().getScheme())) {
+            Uri selectedImage = intent.getData();
+            String[] filePathColumns = {MediaStore.Images.Media.DATA};
+            Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePathColumns, null, null, null);
+            assert cursor != null;
+            if (cursor.moveToFirst()) {
+                path = cursor.getString(cursor.getColumnIndex(filePathColumns[0]));
+            }
+            cursor.close();
+        }
+        if (path != null && !FileUtils.isNotExist(path)) {
+            return new File(path);
+        }
+        return null;
+    }
+
 
     @Override
     public void onStart() {

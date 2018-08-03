@@ -1,5 +1,7 @@
 package com.march.gallery.preview;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -107,11 +109,11 @@ public class GalleryPreviewFragment extends Fragment {
 
     private void updateSelectSiv(ImageInfo imageInfo) {
         if (!mSelectImages.contains(imageInfo)) {
-            mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewUnSelectIcon);
-            mSelectSiv.setClickable(false);
-        } else {
+//            mSelectSiv.setClickable(false);
             mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewSelectIcon);
-            mSelectSiv.setClickable(true);
+        } else {
+            mSelectSiv.setImageResource(Gallery.getGalleryService().getConfig().previewUnSelectIcon);
+//            mSelectSiv.setClickable(true);
         }
     }
 
@@ -143,7 +145,7 @@ public class GalleryPreviewFragment extends Fragment {
         mEnsureTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Gallery.getGalleryService().onSuccess(mSelectImages);
+                publish(mSelectImages);
             }
         });
         mImageVp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -173,6 +175,15 @@ public class GalleryPreviewFragment extends Fragment {
         } else {
             mEnsureTv.setText(String.format(Locale.CHINA, "完成(%d)", mSelectImages.size()));
             mEnsureTv.setSelected(true);
+        }
+    }
+
+    private void publish(List<ImageInfo> imageInfos) {
+        Intent intent = new Intent();
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(imageInfos));
+        if (getActivity() != null) {
+            getActivity().setResult(Activity.RESULT_OK, intent);
+            getActivity().finish();
         }
     }
 }

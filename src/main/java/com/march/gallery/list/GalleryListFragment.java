@@ -1,6 +1,7 @@
 package com.march.gallery.list;
 
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.march.common.extensions.ActFragmentMixin;
 import com.march.common.model.ImageInfo;
 import com.march.common.utils.CheckUtils;
 import com.march.common.utils.ToastUtils;
@@ -106,17 +108,6 @@ public class GalleryListFragment extends Fragment {
                 .commit();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PREVIEW_REQ_CODE) {
-            ArrayList<ImageInfo> imgs = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS);
-            if (imgs != null && !imgs.isEmpty()) {
-                mSelectManager.setSelectDatas(imgs);
-                updateOnResume();
-            }
-        }
-    }
 
     static class MyScanImageTask extends ScanImageTask {
 
@@ -138,7 +129,6 @@ public class GalleryListFragment extends Fragment {
             fragment.updateOnChangeDir(dirInfo);
         }
     }
-
 
     public void initAfterViewCreated() {
         int WIDTH = getContext().getResources().getDisplayMetrics().widthPixels;
@@ -169,7 +159,7 @@ public class GalleryListFragment extends Fragment {
             mTitleRightTv.setText(String.format(Locale.getDefault(), "完成(%d)", mSelectManager.size()));
             mTitleRightTv.setSelected(true);
             mTitleRightTv.setClickable(true);
-            mTitleRightTv.setTextColor(getResources().getColor(R.color.colorPrimary));
+            mTitleRightTv.setTextColor(getResources().getColor(R.color.gallery_main_color));
         }
     }
 
@@ -259,14 +249,13 @@ public class GalleryListFragment extends Fragment {
                 else if (v.getId() == R.id.tv_title_right) {
                     List<ImageInfo> selectDatas = mSelectManager.getResults();
                     if (selectDatas.size() > 0) {
-                        Gallery.getGalleryService().onSuccess(selectDatas);
+                        publish(selectDatas);
                     } else {
                         ToastUtils.show("请至少选择一张照片");
                     }
                 }
             }
         };
-
 
         mBotLy.setOnClickListener(listener);
         mTitleLeftTv.setOnClickListener(new View.OnClickListener() {
@@ -331,7 +320,7 @@ public class GalleryListFragment extends Fragment {
                             public void onClick(View v) {
                                 ArrayList<ImageInfo> list = new ArrayList<>();
                                 list.add(data);
-                                Gallery.getGalleryService().onSuccess(list);
+                                publish(list);
                             }
                         })
                         .setClick(Ids.all(R.id.view_click_cover, R.id.select_yes_sign_tv, R.id.select_no_sign_iv),
@@ -377,7 +366,7 @@ public class GalleryListFragment extends Fragment {
                 if (isSingleMode()) {
                     ArrayList<ImageInfo> list = new ArrayList<>();
                     list.add(data);
-                    Gallery.getGalleryService().onSuccess(list);
+                    publish(list);
                     return;
                 }
                 previewImages(mCurrentImages, mSelectManager.getResults(), pos);
@@ -488,9 +477,28 @@ public class GalleryListFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            if (data.hasExtra(Gallery.KEY_SELECT_IMGS)) {
+                publish(data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS));
+            }
+        }
+    }
+
+    private void publish(List<ImageInfo> imageInfos) {
+        Intent intent = new Intent();
+        intent.putParcelableArrayListExtra(Gallery.KEY_SELECT_IMGS, new ArrayList<>(imageInfos));
+        if (getActivity() != null) {
+            getActivity().setResult(Activity.RESULT_OK, intent);
+            getActivity().finish();
+        }
+    }
+
 
     private void previewImages(List<ImageInfo> allImages, List<ImageInfo> selectImages, int index) {
-        GalleryPreviewActivity.startActivityForResult(getActivity(), allImages, selectImages, index);
+        GalleryPreviewActivity.startActivityForResult(new ActFragmentMixin(this), allImages, selectImages, index);
 //
 //        FragmentTransaction transaction = getActivity()
 //                .getSupportFragmentManager()

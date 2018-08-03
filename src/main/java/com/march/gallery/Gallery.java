@@ -9,12 +9,12 @@ import android.provider.MediaStore;
 import android.widget.ImageView;
 
 import com.march.common.extensions.ActFragmentMixin;
-import com.march.common.model.ImageInfo;
+import com.march.common.extensions.UriX;
 import com.march.gallery.common.CommonUtils;
 import com.march.gallery.ui.GalleryListActivity;
 
 import java.io.File;
-import java.util.List;
+import java.io.IOException;
 
 
 /**
@@ -26,7 +26,7 @@ import java.util.List;
 public class Gallery {
 
     public static final String KEY_LIMIT       = "KEY_LIMIT";
-    public static final String KEY_LIST        = "KEY_LIST";
+    public static final String KEY_CROP        = "KEY_CROP";
     public static final String KEY_ALL_IMGS    = "KEY_ALL_IMGS";
     public static final String KEY_SELECT_IMGS = "KEY_SELECT_IMGS";
     public static final String KEY_INDEX       = "KEY_INDEX";
@@ -34,9 +34,6 @@ public class Gallery {
     public interface GalleryService {
 
         void loadImg(Context context, String path, int width, int height, ImageView imageView);
-
-        void onSuccess(List<ImageInfo> list);
-
 
         Config getConfig();
     }
@@ -101,7 +98,9 @@ public class Gallery {
      */
     public void chooseImgUseDesignGallery(ActFragmentMixin mixin, Bundle bundle) {
         Intent intent = new Intent(mixin.getActivity(), GalleryListActivity.class);
-        intent.putExtras(bundle);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
         mixin.startActivityForResult(intent, DESIGN_GALLERY_REQ_CODE);
     }
 
@@ -114,7 +113,7 @@ public class Gallery {
     public File captureImgUseSystemCamera(ActFragmentMixin mixin) {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File file = CommonUtils.generateImageFile(mixin.getContext().getCacheDir(), "capture", "png");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, UriX.fromFile(mixin.getContext(), file));
         mixin.startActivityForResult(intent, CAPTURE_REQ_CODE);
         return file;
     }
@@ -147,7 +146,8 @@ public class Gallery {
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         // 剪切返回，头像存放的路径
         File file = CommonUtils.generateImageFile(mixin.getContext().getCacheDir(), "crop", "png");
-        intent.putExtra("output", Uri.fromFile(file)); // 专入目标文件
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file)); // 专入目标文件
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         mixin.startActivityForResult(intent, CROP_REQ_CODE);
         return file;
     }

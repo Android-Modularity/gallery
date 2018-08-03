@@ -37,13 +37,6 @@ public abstract class GalleryActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSuccess(List<ImageInfo> list) {
-                LgUtils.object(list);
-                GalleryActivity.this.onResult(list);
-            }
-
-
-            @Override
             public Gallery.Config getConfig() {
                 return null;
             }
@@ -52,7 +45,6 @@ public abstract class GalleryActivity extends AppCompatActivity {
 
     protected abstract void loadImg(Context context, String path, int width, int height, ImageView imageView);
 
-    protected abstract void onResult(List<ImageInfo> list);
 
 //    @Override
 //    public void onBackPressed() {
