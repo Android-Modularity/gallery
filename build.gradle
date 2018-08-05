@@ -1,9 +1,9 @@
 def libs = rootProject.ext.libs
 def business = rootProject.ext.business
 dependencies {
-    compileOnly business.common
-    compileOnly libs.lightadapter
-    compileOnly libs.appcompat_v7
-    compileOnly libs.design
-    compileOnly libs.recyclerView_v7
+    implementation business.common
+    implementation libs.lightadapter
+    implementation libs.appcompat_v7
+    implementation libs.design
+    implementation libs.recyclerView_v7
 }
