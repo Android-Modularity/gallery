@@ -403,7 +403,7 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
         FragmentTransaction transaction = getActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .setCustomAnimations(R.anim.translate_in, R.anim.translate_out);
+                .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out);
         mGalleryPreviewFragment = new GalleryPreviewFragment();
         mGalleryPreviewFragment.setPreviewService(this);
         transaction.add(Gallery.getGalleryService().getPreviewContainerId(), mGalleryPreviewFragment, "preview");
@@ -417,7 +417,7 @@ public class GalleryListFragment extends BaseFragment implements GalleryPreviewF
             getActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .setCustomAnimations(R.anim.translate_in, R.anim.translate_out)
+                    .setCustomAnimations(R.anim.act_translate_in, R.anim.act_translate_out)
                     .hide(mGalleryPreviewFragment)
                     .commit();
             return true;
