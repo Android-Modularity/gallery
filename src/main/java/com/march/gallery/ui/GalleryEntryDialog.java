@@ -20,10 +20,10 @@ import android.view.WindowManager;
 
 import com.march.common.extensions.AppUIMixin;
 import com.march.common.extensions.ListX;
-import com.march.common.extensions.Permission;
+import com.march.common.extensions.PermissionX;
 import com.march.common.extensions.UriX;
-import com.march.common.funcs.Action;
-import com.march.common.funcs.Consumer;
+import com.march.common.function.Action;
+import com.march.common.function.Consumer;
 import com.march.gallery.model.GalleryImageInfo;
 import com.march.common.utils.FileUtils;
 import com.march.common.utils.ToastUtils;
@@ -91,7 +91,7 @@ public class GalleryEntryDialog extends DialogFragment {
         View view = inflater.inflate(R.layout.entry_dialog, container, false);
         view.findViewById(R.id.dialog_capture_tv).setOnClickListener(v -> {
             Action captureAction = () -> mCaptureFile = Gallery.getInst().captureImgUseSystemCamera(mMixin);
-            if (Permission.requestPermissions(mMixin, REQ_PERMISSION_CODE, Manifest.permission.CAMERA)) {
+            if (PermissionX.requestPermissions(mMixin, REQ_PERMISSION_CODE, Manifest.permission.CAMERA)) {
                 captureAction.run();
             } else {
                 mCurAction = captureAction;
@@ -99,7 +99,7 @@ public class GalleryEntryDialog extends DialogFragment {
         });
         view.findViewById(R.id.dialog_gallery_tv).setOnClickListener(v -> {
             Action galleryAction = () -> Gallery.getInst().chooseImgUseDesignGallery(mMixin, getArguments());
-            if (Permission.requestPermissions(mMixin, REQ_PERMISSION_CODE,
+            if (PermissionX.requestPermissions(mMixin, REQ_PERMISSION_CODE,
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 galleryAction.run();
@@ -113,7 +113,7 @@ public class GalleryEntryDialog extends DialogFragment {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (Permission.hasAllPermission(permissions, grantResults)) {
+        if (PermissionX.hasAllPermission(permissions, grantResults)) {
             mCurAction.run();
         }
     }
