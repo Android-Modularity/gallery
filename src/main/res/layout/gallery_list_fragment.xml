@@ -65,7 +65,7 @@
         android:paddingBottom="50dp"
         app:layoutManager="android.support.v7.widget.GridLayoutManager"
         app:spanCount="3"
-        tools:listitem="@layout/gallery_list_item"/>
+        tools:listitem="@layoutId/gallery_list_item"/>
 
     <View
         android:id="@+id/view_pop_cover"

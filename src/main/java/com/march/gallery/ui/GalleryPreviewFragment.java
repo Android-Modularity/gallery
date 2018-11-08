@@ -14,15 +14,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.march.common.Common;
-import com.march.common.extensions.MsgBus;
-import com.march.common.extensions.SizeX;
-import com.march.common.extensions.ViewX;
-import com.march.common.utils.CheckUtils;
+import com.march.common.exts.EmptyX;
+import com.march.common.exts.SizeX;
 import com.march.gallery.Gallery;
 import com.march.gallery.R;
-import com.march.gallery.model.GalleryImageInfo;
-import com.march.lightadapter.LightHolder;
-import com.march.lightadapter.pager.LightPagerAdapter;
+import com.march.gallery.adapter.LightPagerAdapter;
+import com.march.gallery.model.GalleryItem;
+import com.zfy.adapter.LightHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,13 +35,13 @@ import java.util.Locale;
  */
 public class GalleryPreviewFragment extends Fragment {
 
-    private LightPagerAdapter<GalleryImageInfo> mImagePagerAdapter;
+    private LightPagerAdapter<GalleryItem> mImagePagerAdapter;
     private ViewPager                           mImageVp;
     private TextView                            mEnsureTv;
     private ImageView                           mSelectSiv;
 
-    private List<GalleryImageInfo> mAllImages;
-    private List<GalleryImageInfo> mSelectImages;
+    private List<GalleryItem> mAllImages;
+    private List<GalleryItem> mSelectImages;
     private int                    mInitIndex;
     private int                    mMaxNum;
 
@@ -56,7 +54,7 @@ public class GalleryPreviewFragment extends Fragment {
         return fragment;
     }
 
-    public void update(List<GalleryImageInfo> allImages, List<GalleryImageInfo> selectImages, int index) {
+    public void update(List<GalleryItem> allImages, List<GalleryItem> selectImages, int index) {
         mAllImages = new ArrayList<>(allImages);
         mSelectImages = new ArrayList<>(selectImages);
         mInitIndex = index;
@@ -66,18 +64,18 @@ public class GalleryPreviewFragment extends Fragment {
         if (mImagePagerAdapter != null) {
             mImagePagerAdapter.notifyDataSetChanged();
         } else {
-            mImagePagerAdapter = new LightPagerAdapter<GalleryImageInfo>(mAllImages, R.layout.gallery_preview_item) {
+            mImagePagerAdapter = new LightPagerAdapter<GalleryItem>(mAllImages, R.layout.gallery_preview_item) {
                 @Override
-                public void onBindView(LightHolder holder, GalleryImageInfo data) {
+                public void onBindView(LightHolder holder, GalleryItem data) {
                     ImageView view = holder.getView(R.id.iv_image);
-                    Common.getInst().getImgLoadAdapter().loadImg(view.getContext(), data.getPath(), width, height, view);
+                    Common.exports.imageLoader.loadImg(view.getContext(), data.getPath(), width, height, view);
                 }
             };
             mImageVp.setAdapter(mImagePagerAdapter);
         }
         mImageVp.setCurrentItem(mInitIndex);
         if (mSelectSiv != null) {
-            GalleryImageInfo GalleryImageInfo = mAllImages.get(mInitIndex);
+            GalleryItem GalleryImageInfo = mAllImages.get(mInitIndex);
             updateSelectStatus(GalleryImageInfo);
         }
         updateEnsureText();
@@ -93,12 +91,12 @@ public class GalleryPreviewFragment extends Fragment {
         mAllImages = new ArrayList<>();
         mSelectImages = new ArrayList<>();
         if (arguments != null) {
-            ArrayList<GalleryImageInfo> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMG);
-            if (!CheckUtils.isEmpty(allImgs)) {
+            ArrayList<GalleryItem> allImgs = arguments.getParcelableArrayList(Gallery.KEY_ALL_IMG);
+            if (!EmptyX.isEmpty(allImgs)) {
                 mAllImages.addAll(allImgs);
             }
-            ArrayList<GalleryImageInfo> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMG);
-            if (!CheckUtils.isEmpty(selectImgs)) {
+            ArrayList<GalleryItem> selectImgs = arguments.getParcelableArrayList(Gallery.KEY_SELECT_IMG);
+            if (!EmptyX.isEmpty(selectImgs)) {
                 mSelectImages.addAll(selectImgs);
             }
             mInitIndex = arguments.getInt(Gallery.KEY_INDEX, 0);
@@ -109,7 +107,7 @@ public class GalleryPreviewFragment extends Fragment {
     }
 
     // 更新选中图标
-    private void updateSelectStatus(GalleryImageInfo GalleryImageInfo) {
+    private void updateSelectStatus(GalleryItem GalleryImageInfo) {
         if (!mSelectImages.contains(GalleryImageInfo)) {
             mSelectSiv.setImageResource(Gallery.getInst().getCfg().previewUnSelectIcon);
         } else {
@@ -125,7 +123,7 @@ public class GalleryPreviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 updateEnsureText();
-                GalleryImageInfo imageInfo = mAllImages.get(mImageVp.getCurrentItem());
+                GalleryItem imageInfo = mAllImages.get(mImageVp.getCurrentItem());
                 if (mMaxNum == 1) {
                     mSelectImages.clear();
                     mSelectImages.add(imageInfo);
@@ -138,14 +136,14 @@ public class GalleryPreviewFragment extends Fragment {
                 }
                 updateSelectStatus(imageInfo);
                 updateEnsureText();
-                MsgBus.getInst().post(Gallery.EVENT_SELECT, imageInfo);
+//                MsgBus.getInst().post(Gallery.EVENT_SELECT, imageInfo);
             }
         });
-        ViewX.click(view, R.id.siv_back, v -> {
-            if (getActivity() != null) {
-                getActivity().finish();
-            }
-        });
+//        ViewX.click(view, R.id.siv_back, v -> {
+//            if (getActivity() != null) {
+//                getActivity().finish();
+//            }
+//        });
         mEnsureTv.setOnClickListener(v -> publish());
         mImageVp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -155,7 +153,7 @@ public class GalleryPreviewFragment extends Fragment {
 
             @Override
             public void onPageSelected(int position) {
-                GalleryImageInfo GalleryImageInfo = mAllImages.get(position);
+                GalleryItem GalleryImageInfo = mAllImages.get(position);
                 updateSelectStatus(GalleryImageInfo);
             }
 

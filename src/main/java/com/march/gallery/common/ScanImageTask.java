@@ -3,12 +3,12 @@ package com.march.gallery.common;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.march.common.exts.EmptyX;
+import com.march.common.exts.LocalImageX;
 import com.march.common.model.ImageInfo;
 import com.march.common.model.WeakContext;
-import com.march.common.utils.CheckUtils;
-import com.march.common.utils.LocalImageUtils;
 import com.march.gallery.Gallery;
-import com.march.gallery.model.GalleryImageInfo;
+import com.march.gallery.model.GalleryItem;
 import com.march.gallery.model.ImageDirInfo;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public abstract class ScanImageTask extends AsyncTask<Void, Void, ImageDirInfo> {
 
-    private Map<String, List<GalleryImageInfo>> mImageListMap;
+    private Map<String, List<GalleryItem>> mImageListMap;
     private List<ImageDirInfo>                  mDirInfos;
     private WeakContext                         mWeakContext;
 
@@ -37,26 +37,26 @@ public abstract class ScanImageTask extends AsyncTask<Void, Void, ImageDirInfo> 
     @Override
     protected ImageDirInfo doInBackground(Void... voids) {
         mImageListMap = new HashMap<>();
-        Map<String, List<ImageInfo>> imageListMap = LocalImageUtils.formatImages4EachDir(mWeakContext.get());
-        List<GalleryImageInfo> list;
+        Map<String, List<ImageInfo>> imageListMap = LocalImageX.formatImages4EachDir(mWeakContext.get(),"全部");
+        List<GalleryItem> list;
         for (Map.Entry<String, List<ImageInfo>> entry : imageListMap.entrySet()) {
             list = new ArrayList<>();
             for (ImageInfo imageInfo : entry.getValue()) {
                 if (Gallery.getInst().getGalleryAdapter().filterImg(imageInfo)) {
-                    list.add(new GalleryImageInfo(imageInfo));
+                    list.add(new GalleryItem(imageInfo));
                 }
             }
             mImageListMap.put(entry.getKey(), list);
         }
         mDirInfos = new ArrayList<>();
         for (String dirName : mImageListMap.keySet()) {
-            List<GalleryImageInfo> GalleryImageInfoList = mImageListMap.get(dirName);
-            if (!CheckUtils.isEmpty(GalleryImageInfoList)) {
+            List<GalleryItem> GalleryImageInfoList = mImageListMap.get(dirName);
+            if (!EmptyX.isEmpty(GalleryImageInfoList)) {
                 mDirInfos.add(new ImageDirInfo(GalleryImageInfoList.size(), dirName, GalleryImageInfoList.get(0)));
             }
         }
         Collections.sort(mDirInfos);
-        return CheckUtils.isEmpty(mDirInfos) ? null : mDirInfos.get(0);
+        return EmptyX.isEmpty(mDirInfos) ? null : mDirInfos.get(0);
     }
 
     @Override
@@ -69,5 +69,5 @@ public abstract class ScanImageTask extends AsyncTask<Void, Void, ImageDirInfo> 
      * @param mDirInfos     目录列表
      * @param dirInfo       当前选择的目录
      */
-    public abstract void onScanSuccess(Map<String, List<GalleryImageInfo>> mImageListMap, List<ImageDirInfo> mDirInfos, ImageDirInfo dirInfo);
+    public abstract void onScanSuccess(Map<String, List<GalleryItem>> mImageListMap, List<ImageDirInfo> mDirInfos, ImageDirInfo dirInfo);
 }

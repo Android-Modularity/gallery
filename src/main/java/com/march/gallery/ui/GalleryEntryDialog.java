@@ -18,21 +18,22 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.march.common.extensions.AppUIMixin;
-import com.march.common.extensions.ListX;
-import com.march.common.extensions.PermissionX;
-import com.march.common.extensions.UriX;
-import com.march.common.function.Action;
-import com.march.common.function.Consumer;
-import com.march.gallery.model.GalleryImageInfo;
-import com.march.common.utils.FileUtils;
-import com.march.common.utils.ToastUtils;
+import com.march.common.exts.AppUIMixin;
+import com.march.common.exts.FileX;
+import com.march.common.exts.ListX;
+import com.march.common.exts.ToastX;
+import com.march.common.exts.UriX;
+import com.march.common.funcs.Action;
+import com.march.common.funcs.Consumer;
+import com.march.common.mgrs.PermissionMgr;
 import com.march.gallery.Gallery;
 import com.march.gallery.R;
+import com.march.gallery.model.GalleryItem;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * CreateAt : 2018/8/2
@@ -53,9 +54,14 @@ public class GalleryEntryDialog extends DialogFragment {
 
     private Consumer<List<String>> mResultListener;
 
-    private GalleryEntryDialog() {
+    private PermissionMgr mPermissionMgr;
 
+
+    public GalleryEntryDialog() {
+        mPermissionMgr = new PermissionMgr();
     }
+
+
     public static GalleryEntryDialog newInst(int maxNum, boolean crop) {
         GalleryEntryDialog entryDialogFragment = new GalleryEntryDialog();
         Bundle bundle = new Bundle();
@@ -77,7 +83,7 @@ public class GalleryEntryDialog extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_FRAME, R.style.dialog_theme);
-        mMixin = new AppUIMixin(this);
+        mMixin = AppUIMixin.from(this);
         if (getArguments() != null) {
             mMaxNum = getArguments().getInt(Gallery.KEY_MAX_NUM, 0);
             mCrop = getArguments().getBoolean(Gallery.KEY_CROP, false) && mMaxNum == 1;
@@ -90,22 +96,21 @@ public class GalleryEntryDialog extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.entry_dialog, container, false);
         view.findViewById(R.id.dialog_capture_tv).setOnClickListener(v -> {
-            Action captureAction = () -> mCaptureFile = Gallery.getInst().captureImgUseSystemCamera(mMixin);
-            if (PermissionX.requestPermissions(mMixin, REQ_PERMISSION_CODE, Manifest.permission.CAMERA)) {
-                captureAction.run();
-            } else {
-                mCurAction = captureAction;
-            }
+            mPermissionMgr.requestPermissions(mMixin, new PermissionMgr.PermissionCallback() {
+                @Override
+                public void onResult(boolean allGrant, Map<String, Boolean> permissionResultMap) {
+                    mCaptureFile = Gallery.getInst().captureImgUseSystemCamera(mMixin);
+                }
+            }, Manifest.permission.CAMERA);
+
         });
         view.findViewById(R.id.dialog_gallery_tv).setOnClickListener(v -> {
-            Action galleryAction = () -> Gallery.getInst().chooseImgUseDesignGallery(mMixin, getArguments());
-            if (PermissionX.requestPermissions(mMixin, REQ_PERMISSION_CODE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                galleryAction.run();
-            } else {
-                mCurAction = galleryAction;
-            }
+            mPermissionMgr.requestPermissions(mMixin, new PermissionMgr.PermissionCallback() {
+                @Override
+                public void onResult(boolean allGrant, Map<String, Boolean> permissionResultMap) {
+                    Gallery.getInst().chooseImgUseDesignGallery(mMixin, getArguments());
+                }
+            }, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         });
         view.findViewById(R.id.dialog_dismiss_tv).setOnClickListener(v -> dismiss());
         return view;
@@ -113,9 +118,7 @@ public class GalleryEntryDialog extends DialogFragment {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (PermissionX.hasAllPermission(permissions, grantResults)) {
-            mCurAction.run();
-        }
+        mPermissionMgr.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void startCrop(File file) {
@@ -135,22 +138,22 @@ public class GalleryEntryDialog extends DialogFragment {
         }
         // 自定义相册
         if (requestCode == Gallery.DESIGN_GALLERY_REQ_CODE) {
-            ArrayList<GalleryImageInfo> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMG);
+            ArrayList<GalleryItem> GalleryImageInfos = data.getParcelableArrayListExtra(Gallery.KEY_SELECT_IMG);
             if (GalleryImageInfos != null)
                 if (mCrop && GalleryImageInfos.size() == 1) {
                     startCrop(new File(GalleryImageInfos.get(0).getPath()));
                 } else {
                     // 发布结果
-                    publishResult(ListX.map(GalleryImageInfos, GalleryImageInfo::getPath));
+                    publishResult(ListX.map(GalleryImageInfos, GalleryItem::getPath));
                 }
             else {
-                ToastUtils.show("获取图片失败[-1]～");
+                ToastX.show("获取图片失败[-1]～");
             }
         }
         // 相册返回,存放在path路径的文件中
         if (requestCode == Gallery.SYSTEM_GALLERY_REQ_CODE) {
             File systemGalleryImg = findSystemGalleryImg(data);
-            if (!FileUtils.isNotExist(systemGalleryImg)) {
+            if (!FileX.isNotExist(systemGalleryImg)) {
                 if (mCrop) {
                     startCrop(systemGalleryImg);
                 } else {
@@ -158,11 +161,11 @@ public class GalleryEntryDialog extends DialogFragment {
                     publishResult(ListX.listOf(systemGalleryImg.getAbsolutePath()));
                 }
             } else {
-                ToastUtils.show("获取图片失败[0]～");
+                ToastX.show("获取图片失败[0]～");
             }
         }
         if (requestCode == Gallery.CAPTURE_REQ_CODE) {
-            if (!FileUtils.isNotExist(mCaptureFile)) {
+            if (!FileX.isNotExist(mCaptureFile)) {
                 if (mCrop) {
                     startCrop(mCaptureFile);
                 } else {
@@ -170,16 +173,16 @@ public class GalleryEntryDialog extends DialogFragment {
                     publishResult(ListX.listOf(mCaptureFile.getAbsolutePath()));
                 }
             } else {
-                ToastUtils.show("获取图片失败[1]~");
+                ToastX.show("获取图片失败[1]~");
             }
         }
         // 裁剪返回
         if (requestCode == Gallery.CROP_REQ_CODE) {
-            if (!FileUtils.isNotExist(mCropFile)) {
+            if (!FileX.isNotExist(mCropFile)) {
                 // 发布结果
                 publishResult(ListX.listOf(mCropFile.getAbsolutePath()));
             } else {
-                ToastUtils.show("获取图片失败[2]~");
+                ToastX.show("获取图片失败[2]~");
             }
         }
     }
@@ -202,7 +205,7 @@ public class GalleryEntryDialog extends DialogFragment {
             }
             cursor.close();
         }
-        if (path != null && !FileUtils.isNotExist(path)) {
+        if (path != null && !FileX.isNotExist(path)) {
             return new File(path);
         }
         return null;

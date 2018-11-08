@@ -6,8 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
-import com.march.common.extensions.AppUIMixin;
-import com.march.common.extensions.UriX;
+import com.march.common.exts.AppUIMixin;
+import com.march.common.exts.UriX;
 import com.march.gallery.adapter.GalleryAdapter;
 import com.march.gallery.ui.GalleryListActivity;
 

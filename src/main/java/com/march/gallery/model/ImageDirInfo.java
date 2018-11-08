@@ -13,9 +13,9 @@ public class ImageDirInfo implements Comparable<ImageDirInfo> {
 
     private int       picNum;
     private String    dirName;
-    private GalleryImageInfo coverInfo;
+    private GalleryItem coverInfo;
 
-    public ImageDirInfo(int picNum, String dirName, GalleryImageInfo coverInfo) {
+    public ImageDirInfo(int picNum, String dirName, GalleryItem coverInfo) {
         this.picNum = picNum;
         this.dirName = dirName;
         this.coverInfo = coverInfo;
@@ -30,7 +30,7 @@ public class ImageDirInfo implements Comparable<ImageDirInfo> {
         return dirName;
     }
 
-    public GalleryImageInfo getCoverInfo() {
+    public GalleryItem getCoverInfo() {
         return coverInfo;
     }
 

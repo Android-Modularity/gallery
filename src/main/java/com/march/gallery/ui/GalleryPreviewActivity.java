@@ -7,10 +7,10 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
-import com.march.common.extensions.AppUIMixin;
-import com.march.common.extensions.BarUI;
-import com.march.gallery.model.GalleryImageInfo;
+import com.march.common.exts.AppUIMixin;
+import com.march.common.exts.BarUI;
 import com.march.gallery.Gallery;
+import com.march.gallery.model.GalleryItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +26,8 @@ public class GalleryPreviewActivity extends FragmentContainerActivity {
     public static final int CODE_REQ_PREVIEW = 100;
 
     public static void startActivityForResult(AppUIMixin mixin,
-            List<GalleryImageInfo> allImgs,
-            List<GalleryImageInfo> selectImgs,
+            List<GalleryItem> allImgs,
+            List<GalleryItem> selectImgs,
             int index,
             int maxNum) {
         Intent intent = new Intent(mixin.getContext(), GalleryPreviewActivity.class);

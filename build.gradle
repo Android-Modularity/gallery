@@ -1,8 +1,9 @@
+apply from: '../scripts/library.gradle'
 
-def libs = rootProject.ext.libs
 dependencies {
     implementation project(':common')
-    implementation libs.lightadapter
+//    implementation libs.lightadapter
+    implementation project(':lightadapter')
     implementation libs.appcompat_v7
     implementation libs.design
     implementation libs.recyclerView_v7

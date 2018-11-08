@@ -1,9 +1,11 @@
 package com.march.gallery.model;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.march.common.model.ImageInfo;
+import com.zfy.adapter.able.Diffable;
+
+import java.util.Set;
 
 /**
  * CreateAt : 2016/10/31
@@ -12,10 +14,10 @@ import com.march.common.model.ImageInfo;
  * @author chendong
  */
 
-public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelable {
+public class GalleryItem implements Comparable<GalleryItem>, Diffable<GalleryItem> {
 
     // 设置id为自增长的组件
-    private Integer id;
+    private int id;
     // 文件地址
     private String path;
     //0未选中,1选中未插入数据库,||(这边是已经插入数据库的可能状态)2选中插入数据库,3已经上传照片,4完全发布
@@ -28,8 +30,10 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
     private int height;
     private int fileId;
 
+    private boolean selected;
 
-    public GalleryImageInfo(ImageInfo imageInfo) {
+
+    public GalleryItem(ImageInfo imageInfo) {
         this.id = imageInfo.getId();
         this.path = imageInfo.getPath();
         this.name = imageInfo.getName();
@@ -37,7 +41,6 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         this.width = imageInfo.getWidth();
         this.height = imageInfo.getHeight();
     }
-
 
     public String getPath() {
         return path;
@@ -109,15 +112,15 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof GalleryImageInfo)) {
+        if (!(obj instanceof GalleryItem)) {
             return false;
         }
-        GalleryImageInfo another = (GalleryImageInfo) obj;
+        GalleryItem another = (GalleryItem) obj;
         return path.equals(another.path);
     }
 
     @Override
-    public int compareTo(GalleryImageInfo another) {
+    public int compareTo(GalleryItem another) {
         try {
             long a = Long.parseLong(date);
             long b = Long.parseLong(another.getDate());
@@ -135,7 +138,7 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
     }
 
 
-    public GalleryImageInfo() {
+    public GalleryItem() {
     }
 
     @Override
@@ -165,7 +168,7 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         dest.writeInt(this.fileId);
     }
 
-    public GalleryImageInfo(Parcel in) {
+    public GalleryItem(Parcel in) {
         this.id = (Integer) in.readValue(Integer.class.getClassLoader());
         this.path = in.readString();
         this.status = in.readInt();
@@ -176,15 +179,30 @@ public class GalleryImageInfo implements Comparable<GalleryImageInfo>, Parcelabl
         this.fileId = in.readInt();
     }
 
-    public static final Creator<GalleryImageInfo> CREATOR = new Creator<GalleryImageInfo>() {
+    public static final Creator<GalleryItem> CREATOR = new Creator<GalleryItem>() {
         @Override
-        public GalleryImageInfo createFromParcel(Parcel source) {
-            return new GalleryImageInfo(source);
+        public GalleryItem createFromParcel(Parcel source) {
+            return new GalleryItem(source);
         }
 
         @Override
-        public GalleryImageInfo[] newArray(int size) {
-            return new GalleryImageInfo[size];
+        public GalleryItem[] newArray(int size) {
+            return new GalleryItem[size];
         }
     };
+
+    @Override
+    public boolean areItemsTheSame(GalleryItem newItem) {
+        return id == newItem.id;
+    }
+
+    @Override
+    public boolean areContentsTheSame(GalleryItem newItem) {
+        return path.equals(newItem.path);
+    }
+
+    @Override
+    public Set<String> getChangePayload(GalleryItem newItem) {
+        return null;
+    }
 }

@@ -8,21 +8,11 @@ import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 
-import com.march.common.Common;
-import com.march.common.utils.DimensUtils;
-import com.march.gallery.Gallery;
+import com.march.common.exts.SizeX;
 import com.march.gallery.R;
 import com.march.gallery.model.ImageDirInfo;
-import com.march.lightadapter.LightAdapter;
-import com.march.lightadapter.LightHolder;
-import com.march.lightadapter.LightInjector;
-import com.march.lightadapter.extend.SelectManager;
-import com.march.lightadapter.helper.LightManager;
-import com.march.lightadapter.inject.AdapterConfig;
-import com.march.lightadapter.listener.AdapterViewBinder;
-import com.march.lightadapter.listener.SimpleItemListener;
+import com.zfy.adapter.LightAdapter;
 
 import java.util.List;
 
@@ -38,7 +28,6 @@ public class ImageDirDialog extends Dialog {
     private RecyclerView mDirRv;
     private List<ImageDirInfo> mImageDirs;
     private LightAdapter<ImageDirInfo> mDirAdapter;
-    private SelectManager<ImageDirInfo> mSelectManager;
 
     public ImageDirDialog(Context context, List<ImageDirInfo> imageDirs) {
         super(context, R.style.dialog_theme);
@@ -75,41 +64,41 @@ public class ImageDirDialog extends Dialog {
     }
 
     private void createAdapter() {
-        mDirAdapter = new LightAdapter<ImageDirInfo>(getContext(), mImageDirs) {
-            int size = DimensUtils.dp2px(100);
-            @Override
-            public void onBindView(LightHolder holder, final ImageDirInfo data, int pos, int type) {
-                holder.setText(R.id.tv_dir_name, data.getDirName())
-                        .setImage(R.id.iv_dir_sign, Gallery.getInst().getCfg().dirSignIcon)
-                        .setText(R.id.tv_dir_img_num, String.valueOf(data.getPicNum()))
-                        .setCallback(R.id.iv_dir_cover, new LightHolder.Callback<ImageView>() {
-                            @Override
-                            public void bind(LightHolder holder, ImageView view, int pos) {
-                                Common.getInst().getImgLoadAdapter().loadImg(getContext(), data.getCoverInfo().getPath(),
-                                        size, size, holder.<ImageView>getView(R.id.iv_dir_cover));
-                            }
-                        });
-            }
-        };
-        mDirAdapter.setOnItemListener(new SimpleItemListener<ImageDirInfo>() {
-            @Override
-            public void onClick(int pos, LightHolder holder, ImageDirInfo data) {
-                mSelectManager.select(pos);
-                if (listener != null) {
-                    listener.onClickDir(pos, mImageDirs.get(pos));
-                }
-                dismiss();
-            }
-        });
-        mSelectManager = new SelectManager<>(mDirAdapter, SelectManager.TYPE_SINGLE, new AdapterViewBinder<ImageDirInfo>() {
-            @Override
-            public void onBindViewHolder(LightHolder holder, ImageDirInfo data, int pos, int type) {
-                holder.setVisibleInVisible(R.id.iv_dir_sign, mSelectManager.isSelect(data));
-            }
-        });
-        mSelectManager.initSelect(0);
-        AdapterConfig config = AdapterConfig.newConfig().itemLayoutId(R.layout.gallery_dir_item);
-        LightInjector.initAdapter(mDirAdapter, config, mDirRv, LightManager.vLinear(getContext()));
+//        mDirAdapter = new LightAdapter<ImageDirInfo>(getContext(), mImageDirs) {
+//            int size = SizeX.dp2px(100);
+//            @Override
+//            public void onBindView(LightHolder holder, final ImageDirInfo data, int pos, int type) {
+//                holder.setText(R.id.tv_dir_name, data.getDirName())
+//                        .setImage(R.id.iv_dir_sign, Gallery.getInst().getCfg().dirSignIcon)
+//                        .setText(R.id.tv_dir_img_num, String.valueOf(data.getPicNum()))
+//                        .setCallback(R.id.iv_dir_cover, new LightHolder.Callback<ImageView>() {
+//                            @Override
+//                            public void bind(LightHolder holder, ImageView view, int pos) {
+//                                Common.exports.imageLoader.loadImg(getContext(), data.getCoverInfo().getPath(),
+//                                        size, size, holder.getView(R.id.iv_dir_cover));
+//                            }
+//                        });
+//            }
+//        };
+//        mDirAdapter.setOnItemListener(new SimpleItemListener<ImageDirInfo>() {
+//            @Override
+//            public void onClick(int pos, LightHolder holder, ImageDirInfo data) {
+//                mSelectManager.select(pos);
+//                if (listener != null) {
+//                    listener.onClickDir(pos, mImageDirs.get(pos));
+//                }
+//                dismiss();
+//            }
+//        });
+//        mSelectManager = new SelectManager<>(mDirAdapter, SelectManager.TYPE_SINGLE, new AdapterViewBinder<ImageDirInfo>() {
+//            @Override
+//            public void bind(LightHolder holder, ImageDirInfo data, int pos, int type) {
+//                holder.setVisibleInVisible(R.id.iv_dir_sign, mSelectManager.isSelect(data));
+//            }
+//        });
+//        mSelectManager.initSelect(0);
+//        AdapterConfig config = AdapterConfig.newConfig().itemLayoutId(R.layoutId.gallery_dir_item);
+//        LightInjector.initAdapter(mDirAdapter, config, mDirRv, LightManager.vLinear(getContext()));
     }
 
     @Override
@@ -121,9 +110,9 @@ public class ImageDirDialog extends Dialog {
         if (getWindow() != null) {
             getWindow().setWindowAnimations(R.style.dialog_anim_bottom_center);
         }
-        int maxHeight = DimensUtils.dp2px(100) * 4;
-        int minHeight = DimensUtils.dp2px(100) * 3;
-        int currentHeight = DimensUtils.dp2px(80) * mImageDirs.size();
+        int maxHeight = SizeX.dp2px(100) * 4;
+        int minHeight = SizeX.dp2px(100) * 3;
+        int currentHeight = SizeX.dp2px(80) * mImageDirs.size();
         int dialogHeight = Math.min(maxHeight, Math.max(minHeight, currentHeight));
         setDialogAttributes(ViewGroup.LayoutParams.MATCH_PARENT, dialogHeight, 1.0f, 0.5f, Gravity.BOTTOM);
     }
